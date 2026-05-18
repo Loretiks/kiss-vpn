@@ -1,0 +1,90 @@
+name: kiss_vpn
+description: "Kiss VPN — desktop client for kissmain.ru"
+publish_to: 'none'
+version: 0.1.2+3
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # State management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Networking
+  dio: ^5.7.0
+  web_socket_channel: ^3.0.1
+
+  # Storage
+  shared_preferences: ^2.3.3
+  # NOTE: flutter_secure_storage needs ATL (atlstr.h) which is an optional VS
+  # component. For Phase 1-2 MVP we use plain shared_preferences; a DPAPI
+  # wrapper via the `win32` package is the planned upgrade in Phase 5.
+  # flutter_secure_storage: ^9.2.2
+  path_provider: ^2.1.5
+  path: ^1.9.0
+  win32: ^5.15.0
+  ffi: ^2.1.3
+
+  # Windowing / system
+  window_manager: ^0.4.3
+  tray_manager: ^0.5.0
+  hotkey_manager: ^0.2.3
+  screen_retriever: ^0.2.0
+  url_launcher: ^6.3.1
+  app_links: ^6.3.2
+  connectivity_plus: ^6.1.0
+  file_selector: ^1.0.3
+  package_info_plus: ^8.1.2
+
+  # UI / theming
+  dynamic_color: ^1.7.0
+  google_fonts: ^6.2.1
+  fl_chart: ^0.69.0
+  flutter_svg: ^2.0.16
+  country_flags: ^3.2.0
+
+  # Config / data
+  yaml: ^3.1.2
+  yaml_writer: ^2.0.0
+  collection: ^1.18.0
+  intl: ^0.19.0
+  json_annotation: ^4.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.13
+  json_serializable: ^6.8.0
+  riverpod_generator: ^2.6.3
+  custom_lint: ^0.7.6
+  riverpod_lint: ^2.6.5
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/images/heart.png
+    - assets/images/heart_96.png
+    - assets/images/tray.ico
+    - assets/geo/
+
+  # Inter font is loaded via google_fonts package (runtime fetch + cache).
+  # To bundle offline, drop Inter-*.ttf into assets/fonts/ and uncomment:
+  # fonts:
+  #   - family: Inter
+  #     fonts:
+  #       - asset: assets/fonts/Inter-Regular.ttf
+  #       - asset: assets/fonts/Inter-Medium.ttf
+  #         weight: 500
+  #       - asset: assets/fonts/Inter-SemiBold.ttf
+  #         weight: 600
+  #       - asset: assets/fonts/Inter-Bold.ttf
+  #         weight: 700

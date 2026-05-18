@@ -1,0 +1,42 @@
+# Build output
+dist/
+**/build/
+**/bin/
+**/obj/
+
+# Vendor binaries (downloaded by scripts/fetch-vendor.ps1)
+vendor/
+kiss_vpn_core/bin/*.exe
+kiss_vpn_core/bin/wintun.dll
+kiss_vpn_core/geo/*.dat
+kiss_vpn_core/geo/*.metadb
+
+# Inspection / temp working dirs
+_kreed_inspect/
+
+# Flutter
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.metadata
+.pubspec.lock.bak
+
+# Windows / native
+*.pdb
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+
+# IDE
+.vscode/
+.idea/
+*.iml
+*.swp
+
+# OS noise
+Thumbs.db
+.DS_Store
