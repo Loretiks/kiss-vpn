@@ -12,6 +12,7 @@ import 'core/platform/system_proxy.dart';
 import 'core/platform/tray.dart';
 import 'core/storage/secrets_store.dart';
 import 'core/storage/settings.dart';
+import 'core/subscription/device_identity.dart';
 import 'core/subscription/subscription_repository.dart';
 
 Future<void> main(List<String> args) async {
@@ -28,6 +29,7 @@ Future<void> main(List<String> args) async {
 
   final prefs = await SharedPreferences.getInstance();
   final secrets = SecretsStore(prefs);
+  final identity = await DeviceIdentity.loadOrCreate(secrets);
 
   await windowManager.ensureInitialized();
   await windowManager.waitUntilReadyToShow(
@@ -52,6 +54,7 @@ Future<void> main(List<String> args) async {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         secretsStoreProvider.overrideWithValue(secrets),
+        deviceIdentityProvider.overrideWithValue(identity),
       ],
       child: const KissVpnApp(),
     ),

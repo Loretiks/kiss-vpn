@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import 'device_identity.dart';
+
 /// Downloads a raw subscription body.
 ///
 /// User-Agent shape: `KissVPN/<version> (Windows NT 10.0; Win64; <arch>; clash)`.
@@ -23,9 +25,12 @@ import 'package:package_info_plus/package_info_plus.dart';
 ///  * If a server still falls back to a base64 vless list, the repository
 ///    rebuilds a Clash config locally via [ConfigWriter] — nothing breaks.
 class SubFetcher {
-  SubFetcher({Dio? dio}) : _dio = dio ?? Dio();
+  SubFetcher({Dio? dio, DeviceIdentity? identity})
+      : _dio = dio ?? Dio(),
+        _identity = identity;
 
   final Dio _dio;
+  final DeviceIdentity? _identity;
   String? _cachedUa;
 
   Future<String> _userAgent() async {
@@ -41,13 +46,21 @@ class SubFetcher {
 
   Future<SubResponse> fetch(String url) async {
     final ua = await _userAgent();
+    final headers = <String, String>{
+      'User-Agent': ua,
+      'Accept': '*/*',
+    };
+    // HWID-protocol headers — kissmain.ru / Remnawave panels read these to
+    // identify and list the device. Without them the client shows up as
+    // "unknown app". Optional in tests where identity isn't wired up.
+    final identity = _identity;
+    if (identity != null) {
+      headers.addAll(identity.toHeaders());
+    }
     final r = await _dio.get<String>(
       url,
       options: Options(
-        headers: {
-          'User-Agent': ua,
-          'Accept': '*/*',
-        },
+        headers: headers,
         followRedirects: true,
         responseType: ResponseType.plain,
         validateStatus: (s) => s != null && s < 500,
@@ -57,12 +70,12 @@ class SubFetcher {
       throw StateError('Subscription endpoint returned ${r.statusCode}');
     }
 
-    final headers = r.headers.map.map((k, v) => MapEntry(k.toLowerCase(), v.join('; ')));
+    final respHeaders = r.headers.map.map((k, v) => MapEntry(k.toLowerCase(), v.join('; ')));
     return SubResponse(
       body: r.data ?? '',
-      userInfo: headers['subscription-userinfo'],
-      profileTitle: headers['profile-title'] ?? headers['content-disposition'],
-      profileUpdateInterval: int.tryParse(headers['profile-update-interval'] ?? ''),
+      userInfo: respHeaders['subscription-userinfo'],
+      profileTitle: respHeaders['profile-title'] ?? respHeaders['content-disposition'],
+      profileUpdateInterval: int.tryParse(respHeaders['profile-update-interval'] ?? ''),
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yaml/yaml.dart';
 
 import '../storage/secrets_store.dart';
+import 'device_identity.dart';
 import 'sub_fetcher.dart';
 import 'vless_parser.dart';
 import 'vless_proxy.dart';
@@ -197,8 +198,16 @@ class SubscriptionRepository {
 final secretsStoreProvider = Provider<SecretsStore>(
     (ref) => throw UnimplementedError('Override secretsStoreProvider in ProviderScope'));
 
+/// Holds the [DeviceIdentity] loaded once at app startup (see main.dart).
+/// Overridden in [ProviderScope]; reading it without an override throws.
+final deviceIdentityProvider = Provider<DeviceIdentity>(
+    (ref) => throw UnimplementedError('Override deviceIdentityProvider in ProviderScope'));
+
 final subscriptionRepositoryProvider = Provider<SubscriptionRepository>((ref) {
-  return SubscriptionRepository(store: ref.watch(secretsStoreProvider));
+  return SubscriptionRepository(
+    store: ref.watch(secretsStoreProvider),
+    fetcher: SubFetcher(identity: ref.watch(deviceIdentityProvider)),
+  );
 });
 
 /// Cached proxy list. Reads from disk asynchronously, then any widget can
