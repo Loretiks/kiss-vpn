@@ -56,6 +56,7 @@ try {
 
     Write-Host "==> Staging core, geo, wintun"
     Copy-Item "$repoRoot\kiss_vpn_core\bin\KissVPNCore.exe" -Destination $dist -Force
+    Copy-Item "$repoRoot\kiss_vpn_core\bin\xray.exe"        -Destination $dist -Force
     Copy-Item "$repoRoot\kiss_vpn_core\bin\wintun.dll"      -Destination $dist -Force
     Copy-Item "$repoRoot\kiss_vpn_core\geo\geoip.dat"       -Destination $dist -Force
     Copy-Item "$repoRoot\kiss_vpn_core\geo\geosite.dat"     -Destination $dist -Force

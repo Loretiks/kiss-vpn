@@ -1,6 +1,8 @@
 # Downloads the bundled binaries that the build needs but we don't
 # commit to git:
 #   - Mihomo (Clash.Meta) — windows-amd64-compatible release
+#   - Xray-core — side-channel transport for vless+grpc proxies that Mihomo
+#                 can't handle correctly (its gRPC client is unary-only)
 #   - Wintun — 0.14.1 from wintun.net
 #   - GeoIP / GeoSite / metadb — Loyalsoldier + MetaCubeX
 #
@@ -9,7 +11,8 @@
 
 [CmdletBinding()]
 param(
-    [string]$MihomoVersion = 'v1.19.25'
+    [string]$MihomoVersion = 'v1.19.25',
+    [string]$XrayVersion   = 'v26.3.27'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -40,6 +43,18 @@ if (-not (Test-Path $mihomoExe)) {
     $exe = Get-ChildItem $extract -Filter '*.exe' | Select-Object -First 1
     Copy-Item $exe.FullName $mihomoExe -Force
     Write-Host "Mihomo $MihomoVersion → $mihomoExe"
+}
+
+# ── Xray-core (side-channel for grpc proxies)
+$xrayExe = Join-Path $coreDir 'xray.exe'
+if (-not (Test-Path $xrayExe)) {
+    $zip = Join-Path $tmpDir 'xray.zip'
+    Download "https://github.com/XTLS/Xray-core/releases/download/$XrayVersion/Xray-windows-64.zip" $zip
+    $extract = Join-Path $tmpDir 'xray-extracted'
+    Remove-Item $extract -Recurse -Force -ErrorAction SilentlyContinue
+    Expand-Archive -Path $zip -DestinationPath $extract -Force
+    Copy-Item (Join-Path $extract 'xray.exe') $xrayExe -Force
+    Write-Host "Xray $XrayVersion → $xrayExe"
 }
 
 # ── Wintun

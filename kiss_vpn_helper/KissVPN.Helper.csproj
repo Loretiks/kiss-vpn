@@ -13,8 +13,8 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <PublishTrimmed>false</PublishTrimmed>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <Version>0.1.3</Version>
-    <FileVersion>0.1.3.0</FileVersion>
+    <Version>0.1.4</Version>
+    <FileVersion>0.1.4.0</FileVersion>
     <Product>Kiss VPN Helper</Product>
     <Company>kissmain.ru</Company>
     <ApplicationManifest>app.manifest</ApplicationManifest>

@@ -11,6 +11,7 @@ import '../rules/rules_builder.dart';
 import '../storage/settings.dart';
 import '../rules/server_selection.dart';
 import '../subscription/subscription_repository.dart';
+import '../xray/grpc_bridge.dart';
 import 'config_patcher.dart';
 import 'config_writer.dart';
 import 'mihomo_api.dart';
@@ -101,6 +102,7 @@ class VpnController extends StateNotifier<VpnState> {
   final Ref _ref;
   final _api = MihomoApi();
   final _proc = MihomoProcessManager();
+  final _grpc = GrpcBridge();
   HelperClient? _helper;
   StreamSubscription<TrafficSample>? _trafficSub;
 
@@ -163,6 +165,7 @@ class VpnController extends StateNotifier<VpnState> {
     } finally {
       if (startedHere) {
         await _proc.stop();
+        await _grpc.teardown();
       }
     }
   }
@@ -214,6 +217,9 @@ class VpnController extends StateNotifier<VpnState> {
     yaml = ConfigPatcher.setTun(yaml, enable: false);
 
     final profile = await _proc.profileDir();
+    // Funnel grpc proxies through the xray sidecar even during latency
+    // probes — otherwise every grpc server reports infinity.
+    yaml = await _grpc.setup(yaml, workDir: profile.path);
     final configPath = p.join(profile.path, 'probe.yaml');
     await File(configPath).writeAsString(yaml);
     await _proc.start(configPath: configPath);
@@ -265,6 +271,13 @@ class VpnController extends StateNotifier<VpnState> {
       }
 
       final profile = await _proc.profileDir();
+      // Spin up xray sidecar for any vless+grpc proxies in the config.
+      // Mihomo's grpc transport is unary-only and the panel's xray server
+      // drops those connections — see project memory
+      // `project-mihomo-grpc-limitation`. After this call, grpc proxies in
+      // the YAML have been rewritten as `type: socks5 → 127.0.0.1:<port>`
+      // stubs that Mihomo will dial cleanly.
+      configYaml = await _grpc.setup(configYaml, workDir: profile.path);
       final configPath = p.join(profile.path, 'config.yaml');
       await File(configPath).writeAsString(configYaml);
 
@@ -379,6 +392,7 @@ class VpnController extends StateNotifier<VpnState> {
     } catch (e) {
       state = state.copyWith(status: VpnStatus.error, error: e.toString());
       await _proc.stop();
+      await _grpc.teardown();
       try {
         await _helper?.call('stop_vpn');
       } catch (_) {/* best-effort */}
@@ -418,6 +432,10 @@ class VpnController extends StateNotifier<VpnState> {
       await _proc.stop();
     }
 
+    // Sidecar must outlive Mihomo by a fraction so any in-flight tunnels
+    // can flush — by the time we're here Mihomo is fully stopped.
+    await _grpc.teardown();
+
     state = const VpnState();
   }
 
@@ -425,6 +443,7 @@ class VpnController extends StateNotifier<VpnState> {
   void dispose() {
     _trafficSub?.cancel();
     _proc.stop();
+    _grpc.teardown();
     _helper?.close();
     super.dispose();
   }
