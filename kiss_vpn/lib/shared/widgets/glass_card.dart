@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/kiss_theme.dart';
 import '../theme/tokens.dart';
 
 /// A flat dark card with an optional 1-px gradient stroke around it.
@@ -27,6 +28,7 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final body = Container(
       decoration: BoxDecoration(
         gradient: gradient ?? KissGradients.surface,
@@ -50,8 +52,8 @@ class GlassCard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(radius),
         onTap: onTap,
-        splashColor: KissColors.pink.withValues(alpha: 0.08),
-        highlightColor: KissColors.pink.withValues(alpha: 0.04),
+        splashColor: t.accent.withValues(alpha: 0.08),
+        highlightColor: t.accent.withValues(alpha: 0.04),
         child: framed,
       ),
     );
@@ -71,16 +73,17 @@ class _GradientBorder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return AnimatedContainer(
       duration: KissDurations.med,
       decoration: BoxDecoration(
         gradient: selected ? KissGradients.brand : null,
-        color: selected ? null : KissColors.stroke,
+        color: selected ? null : t.stroke,
         borderRadius: BorderRadius.circular(radius),
         boxShadow: selected
             ? [
                 BoxShadow(
-                  color: KissColors.pink.withValues(alpha: 0.18),
+                  color: t.accent.withValues(alpha: 0.18),
                   blurRadius: 24,
                   spreadRadius: -4,
                 ),

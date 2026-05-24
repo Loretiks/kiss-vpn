@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/subscription/sub_fetcher.dart';
 import '../../core/subscription/subscription_repository.dart';
 import '../../core/subscription/vless_proxy.dart';
+import '../../shared/theme/kiss_theme.dart';
 import '../../shared/theme/tokens.dart';
 import '../../shared/utils/country.dart';
 import '../../shared/utils/format.dart';
@@ -64,6 +65,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage> {
       final repo = ref.read(subscriptionRepositoryProvider);
       await repo.setUrl(_urlCtl.text.trim());
       final proxies = await repo.refresh();
+      ref.read(subVersionProvider.notifier).state++;
       final info = await repo.cachedInfo();
       final upd = await repo.lastUpdate();
       if (mounted) {
@@ -89,6 +91,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(
           KissSpacing.x4, KissSpacing.x3, KissSpacing.x4, KissSpacing.x4),
@@ -116,8 +119,8 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage> {
           const SizedBox(height: KissSpacing.lg),
           Text(
             'Серверы (${_lastProxies.length})',
-            style: const TextStyle(
-              color: KissColors.textMid,
+            style: TextStyle(
+              color: t.textMid,
               fontWeight: FontWeight.w600,
               fontSize: 13,
               letterSpacing: 0.3,
@@ -151,23 +154,24 @@ class _UrlCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return Container(
       padding: const EdgeInsets.all(KissSpacing.xl),
       decoration: BoxDecoration(
-        color: KissColors.bg2.withValues(alpha: 0.6),
+        color: t.bg2.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(KissRadius.md),
-        border: Border.all(color: KissColors.stroke, width: 1),
+        border: Border.all(color: t.stroke, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextField(
             controller: controller,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Ссылка на подписку',
               hintText: 'https://kissmain.ru/sub/...',
               prefixIcon: Icon(Icons.link_rounded,
-                  size: 18, color: KissColors.textLow),
+                  size: 18, color: t.textLow),
             ),
           ),
           const SizedBox(height: KissSpacing.lg),
@@ -184,7 +188,7 @@ class _UrlCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     updatedAt!,
-                    style: const TextStyle(color: KissColors.textLow),
+                    style: TextStyle(color: t.textLow),
                   ),
                 ),
             ],
@@ -194,15 +198,15 @@ class _UrlCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(KissSpacing.md),
               decoration: BoxDecoration(
-                color: KissColors.danger.withValues(alpha: 0.08),
+                color: t.danger.withValues(alpha: 0.08),
                 border: Border.all(
-                    color: KissColors.danger.withValues(alpha: 0.4)),
+                    color: t.danger.withValues(alpha: 0.4)),
                 borderRadius: BorderRadius.circular(KissRadius.sm),
               ),
               child: Text(
                 error!,
-                style: const TextStyle(
-                  color: KissColors.danger,
+                style: TextStyle(
+                  color: t.danger,
                   fontSize: 12,
                   fontFamily: 'JetBrains Mono',
                 ),
@@ -221,6 +225,7 @@ class _SubInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final ratio = info.total == 0
         ? 0.0
         : (info.used / info.total).clamp(0.0, 1.0);
@@ -230,9 +235,9 @@ class _SubInfoCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(KissSpacing.xl),
       decoration: BoxDecoration(
-        color: KissColors.bg2.withValues(alpha: 0.6),
+        color: t.bg2.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(KissRadius.md),
-        border: Border.all(color: KissColors.stroke, width: 1),
+        border: Border.all(color: t.stroke, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,7 +255,7 @@ class _SubInfoCard extends StatelessWidget {
               if (info.expire != null)
                 Text(
                   'до ${info.expire!.toLocal().day}.${info.expire!.toLocal().month}.${info.expire!.toLocal().year}',
-                  style: const TextStyle(color: KissColors.textMid),
+                  style: TextStyle(color: t.textMid),
                 ),
             ],
           ),
@@ -259,19 +264,19 @@ class _SubInfoCard extends StatelessWidget {
             children: [
               Text(
                 Format.bytes(info.used),
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 22,
-                  color: KissColors.textHi,
-                  fontFeatures: [FontFeature.tabularFigures()],
+                  color: t.textHi,
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
               if (info.total > 0) ...[
                 const SizedBox(width: KissSpacing.sm),
                 Text(
                   '/ ${Format.bytes(info.total)}',
-                  style: const TextStyle(
-                    color: KissColors.textMid,
+                  style: TextStyle(
+                    color: t.textMid,
                     fontSize: 14,
                   ),
                 ),
@@ -280,7 +285,7 @@ class _SubInfoCard extends StatelessWidget {
               if (left != null)
                 Text(
                   'осталось $left',
-                  style: const TextStyle(color: KissColors.textMid),
+                  style: TextStyle(color: t.textMid),
                 ),
             ],
           ),
@@ -291,7 +296,7 @@ class _SubInfoCard extends StatelessWidget {
               height: 8,
               child: Stack(
                 children: [
-                  Container(color: KissColors.bg3),
+                  Container(color: t.bg3),
                   FractionallySizedBox(
                     widthFactor: ratio,
                     child: const DecoratedBox(
@@ -314,14 +319,15 @@ class _MiniServerRow extends StatelessWidget {
   final VlessProxy proxy;
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final country = Country.parse(proxy.name);
     return Container(
       padding: const EdgeInsets.symmetric(
           horizontal: KissSpacing.md, vertical: KissSpacing.sm + 2),
       decoration: BoxDecoration(
-        color: KissColors.bg2,
+        color: t.bg2,
         borderRadius: BorderRadius.circular(KissRadius.sm),
-        border: Border.all(color: KissColors.stroke, width: 1),
+        border: Border.all(color: t.stroke, width: 1),
       ),
       child: Row(
         children: [
@@ -338,8 +344,8 @@ class _MiniServerRow extends StatelessWidget {
                 Text(
                   '${proxy.server}:${proxy.port} · ${proxy.security ?? "plain"}'
                   '${proxy.flow != null ? ' · ${proxy.flow}' : ''}',
-                  style: const TextStyle(
-                    color: KissColors.textLow,
+                  style: TextStyle(
+                    color: t.textLow,
                     fontSize: 11.5,
                     fontFamily: 'JetBrains Mono',
                   ),

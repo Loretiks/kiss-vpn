@@ -226,7 +226,8 @@ class VpnController extends StateNotifier<VpnState> {
   }
 
   Future<void> connect() async {
-    state = state.copyWith(status: VpnStatus.connecting, clearError: true);
+    if (state.status == VpnStatus.connecting || state.status == VpnStatus.connected) return;
+    state = state.copyWith(status: VpnStatus.connecting, clearError: true, totalDown: 0, totalUp: 0);
     try {
       final repo = _ref.read(subscriptionRepositoryProvider);
       final settings = _ref.read(settingsControllerProvider);
@@ -391,11 +392,14 @@ class VpnController extends StateNotifier<VpnState> {
       );
     } catch (e) {
       state = state.copyWith(status: VpnStatus.error, error: e.toString());
+      await syncSystemProxy(connecting: false, engine: VpnEngine.proxy);
       await _proc.stop();
       await _grpc.teardown();
       try {
         await _helper?.call('stop_vpn');
       } catch (_) {/* best-effort */}
+      await _helper?.close();
+      _helper = null;
     }
   }
 
@@ -442,9 +446,7 @@ class VpnController extends StateNotifier<VpnState> {
   @override
   void dispose() {
     _trafficSub?.cancel();
-    _proc.stop();
-    _grpc.teardown();
-    _helper?.close();
+    unawaited(disconnect());
     super.dispose();
   }
 }

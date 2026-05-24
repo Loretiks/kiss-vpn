@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/subscription/vless_proxy.dart';
+import '../theme/kiss_theme.dart';
 import '../theme/tokens.dart';
 import '../utils/country.dart';
 import 'flag.dart';
@@ -24,13 +25,13 @@ class ServerCard extends StatelessWidget {
   final int? delayMs;
   final VoidCallback onTap;
 
-  Color get _latencyColor {
+  Color _latencyColor(KissTheme t) {
     final d = delayMs;
-    if (d == null) return KissColors.textLow;
-    if (d == 0) return KissColors.danger;
-    if (d < 200) return KissColors.success;
-    if (d < 600) return KissColors.warning;
-    return KissColors.danger;
+    if (d == null) return t.textLow;
+    if (d == 0) return t.danger;
+    if (d < 200) return t.success;
+    if (d < 600) return t.warning;
+    return t.danger;
   }
 
   String get _latencyLabel {
@@ -42,7 +43,9 @@ class ServerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final country = Country.parse(proxy.name);
+    final latencyColor = _latencyColor(t);
 
     return GlassCard(
       onTap: onTap,
@@ -64,15 +67,15 @@ class ServerCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 1),
                         decoration: BoxDecoration(
-                          color: KissColors.bg3,
+                          color: t.bg3,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           country.code!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: KissColors.textMid,
+                            color: t.textMid,
                             letterSpacing: 0.6,
                           ),
                         ),
@@ -82,10 +85,10 @@ class ServerCard extends StatelessWidget {
                     Flexible(
                       child: Text(
                         country.clean.isEmpty ? proxy.name : country.clean,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 15,
-                          color: KissColors.textHi,
+                          color: t.textHi,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -98,8 +101,8 @@ class ServerCard extends StatelessWidget {
                   '${proxy.server}:${proxy.port}'
                   '${proxy.security != null ? ' · ${proxy.security}' : ''}'
                   '${proxy.flow != null ? ' · ${proxy.flow}' : ''}',
-                  style: const TextStyle(
-                    color: KissColors.textLow,
+                  style: TextStyle(
+                    color: t.textLow,
                     fontSize: 12,
                     fontFamily: 'JetBrains Mono',
                   ),
@@ -111,16 +114,16 @@ class ServerCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(
                 horizontal: KissSpacing.md, vertical: 6),
             decoration: BoxDecoration(
-              color: _latencyColor.withValues(alpha: 0.12),
+              color: latencyColor.withValues(alpha: 0.12),
               border: Border.all(
-                  color: _latencyColor.withValues(alpha: 0.35), width: 1),
+                  color: latencyColor.withValues(alpha: 0.35), width: 1),
               borderRadius: BorderRadius.circular(KissRadius.pill),
             ),
             child: Text(
               _latencyLabel,
               style: TextStyle(
                 fontWeight: FontWeight.w700,
-                color: _latencyColor,
+                color: latencyColor,
                 fontSize: 12,
                 fontFeatures: const [FontFeature.tabularFigures()],
               ),
@@ -130,9 +133,9 @@ class ServerCard extends StatelessWidget {
           AnimatedOpacity(
             duration: KissDurations.fast,
             opacity: selected ? 1.0 : 0.0,
-            child: const Padding(
-              padding: EdgeInsets.only(left: KissSpacing.xs),
-              child: Icon(Icons.check_circle, color: KissColors.pink, size: 20),
+            child: Padding(
+              padding: const EdgeInsets.only(left: KissSpacing.xs),
+              child: Icon(Icons.check_circle, color: t.accent, size: 20),
             ),
           ),
         ],

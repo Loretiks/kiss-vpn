@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
 
+import '../../core/mihomo/vpn_controller.dart';
+import '../../core/storage/settings.dart';
+import '../theme/kiss_theme.dart';
 import '../theme/tokens.dart';
 import 'heart_logo.dart';
 
 /// Custom frameless-window titlebar.
-class Titlebar extends StatelessWidget {
+class Titlebar extends ConsumerWidget {
   const Titlebar({super.key, this.pinned = false, this.onPin});
 
   final bool pinned;
   final VoidCallback? onPin;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final closeToTray = ref.watch(settingsControllerProvider).closeToTray;
     return SizedBox(
       height: 44,
       child: GestureDetector(
@@ -55,9 +60,16 @@ class Titlebar extends StatelessWidget {
             ),
             _IconBtn(
               icon: Icons.close,
-              tooltip: 'Скрыть в трей',
+              tooltip: closeToTray ? 'Скрыть в трей' : 'Закрыть',
               danger: true,
-              onTap: () => windowManager.hide(),
+              onTap: () {
+                if (closeToTray) {
+                  windowManager.hide();
+                } else {
+                  ref.read(vpnControllerProvider.notifier).disconnect();
+                  windowManager.destroy();
+                }
+              },
             ),
             const SizedBox(width: KissSpacing.xs),
           ],
@@ -70,6 +82,7 @@ class Titlebar extends StatelessWidget {
 class _BrandWordmark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -82,7 +95,7 @@ class _BrandWordmark extends StatelessWidget {
         ),
         const SizedBox(width: KissSpacing.md),
         RichText(
-          text: const TextSpan(
+          text: TextSpan(
             children: [
               TextSpan(
                 text: 'kiss',
@@ -90,7 +103,7 @@ class _BrandWordmark extends StatelessWidget {
                   fontFamily: 'Unbounded',
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
-                  color: KissColors.textHi,
+                  color: t.textHi,
                   letterSpacing: -0.2,
                 ),
               ),
@@ -100,7 +113,7 @@ class _BrandWordmark extends StatelessWidget {
                   fontFamily: 'Manrope',
                   fontWeight: FontWeight.w500,
                   fontSize: 12,
-                  color: KissColors.textLow,
+                  color: t.textLow,
                   letterSpacing: 4,
                 ),
               ),
@@ -134,13 +147,14 @@ class _IconBtnState extends State<_IconBtn> {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final color = _hover
-        ? (widget.danger ? KissColors.danger : KissColors.textHi)
-        : KissColors.textMid;
+        ? (widget.danger ? t.danger : t.textHi)
+        : t.textMid;
     final bg = _hover
         ? (widget.danger
-            ? KissColors.danger.withValues(alpha: 0.12)
-            : KissColors.bg3)
+            ? t.danger.withValues(alpha: 0.12)
+            : t.bg3)
         : Colors.transparent;
 
     final btn = MouseRegion(

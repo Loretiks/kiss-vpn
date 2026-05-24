@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/kiss_theme.dart';
 import '../theme/tokens.dart';
 
 /// Primary brand button — pink → violet gradient with a soft outer glow.
@@ -19,6 +20,7 @@ class GradientButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final disabled = onPressed == null;
     return Opacity(
       opacity: disabled ? 0.5 : 1.0,
@@ -40,7 +42,7 @@ class GradientButton extends StatelessWidget {
                   ? null
                   : [
                       BoxShadow(
-                        color: KissColors.pink.withValues(alpha: 0.45),
+                        color: t.accent.withValues(alpha: 0.45),
                         blurRadius: 22,
                         spreadRadius: -4,
                       ),
@@ -88,6 +90,7 @@ class GhostButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final disabled = onPressed == null;
     return Opacity(
       opacity: disabled ? 0.5 : 1.0,
@@ -103,21 +106,21 @@ class GhostButton extends StatelessWidget {
               vertical: compact ? KissSpacing.sm + 2 : KissSpacing.md + 2,
             ),
             decoration: BoxDecoration(
-              color: KissColors.bg2,
+              color: t.bg2,
               borderRadius: BorderRadius.circular(KissRadius.pill),
-              border: Border.all(color: KissColors.stroke, width: 1),
+              border: Border.all(color: t.stroke, width: 1),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (icon != null) ...[
-                  Icon(icon, size: compact ? 16 : 18, color: KissColors.textMid),
+                  Icon(icon, size: compact ? 16 : 18, color: t.textMid),
                   const SizedBox(width: KissSpacing.sm),
                 ],
                 Text(
                   label,
                   style: TextStyle(
-                    color: KissColors.textHi,
+                    color: t.textHi,
                     fontWeight: FontWeight.w600,
                     fontSize: compact ? 13 : 14,
                   ),

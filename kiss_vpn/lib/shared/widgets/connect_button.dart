@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/mihomo/vpn_controller.dart';
+import '../theme/kiss_theme.dart';
 import '../theme/tokens.dart';
 
 /// Wide horizontal connect bar — modern VPN-client style (Mullvad / Proton).
@@ -35,10 +36,35 @@ class _ConnectButtonState extends State<ConnectButton>
   late final AnimationController _pulse = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1400),
-  )..repeat(reverse: true);
+  );
 
   bool _hover = false;
   bool _pressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _syncPulse();
+  }
+
+  @override
+  void didUpdateWidget(covariant ConnectButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.status != widget.status) {
+      _syncPulse();
+    }
+  }
+
+  void _syncPulse() {
+    final shouldAnimate = widget.status == VpnStatus.connecting ||
+        widget.status == VpnStatus.connected;
+    if (shouldAnimate) {
+      if (!_pulse.isAnimating) _pulse.repeat(reverse: true);
+    } else {
+      _pulse.stop();
+      _pulse.value = 0;
+    }
+  }
 
   @override
   void dispose() {
@@ -60,6 +86,7 @@ class _ConnectButtonState extends State<ConnectButton>
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final connected = widget.status == VpnStatus.connected;
     final error = widget.status == VpnStatus.error;
 
@@ -86,31 +113,31 @@ class _ConnectButtonState extends State<ConnectButton>
             Color fg = Colors.white;
 
             if (connected) {
-              solid = KissColors.success;
+              solid = t.success;
               shadow = [
                 BoxShadow(
-                  color: KissColors.success.withValues(alpha: 0.5 * pulseT),
+                  color: t.success.withValues(alpha: 0.5 * pulseT),
                   blurRadius: 32,
                   spreadRadius: 2,
                 ),
               ];
             } else if (error) {
               solid = Colors.transparent;
-              borderColor = KissColors.danger;
-              fg = KissColors.danger;
+              borderColor = t.danger;
+              fg = t.danger;
               shadow = const [];
             } else if (_busy) {
               gradient = LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  KissColors.warning.withValues(alpha: 0.85 - 0.3 * pulseT),
-                  KissColors.pink.withValues(alpha: 0.85 - 0.3 * pulseT),
+                  t.warning.withValues(alpha: 0.85 - 0.3 * pulseT),
+                  t.accent.withValues(alpha: 0.85 - 0.3 * pulseT),
                 ],
               );
               shadow = [
                 BoxShadow(
-                  color: KissColors.warning.withValues(alpha: 0.4),
+                  color: t.warning.withValues(alpha: 0.4),
                   blurRadius: 24,
                   spreadRadius: -4,
                 ),
@@ -119,7 +146,7 @@ class _ConnectButtonState extends State<ConnectButton>
               gradient = KissGradients.brand;
               shadow = [
                 BoxShadow(
-                  color: KissColors.pink.withValues(alpha: _hover ? 0.55 : 0.35),
+                  color: t.accent.withValues(alpha: _hover ? 0.55 : 0.35),
                   blurRadius: _hover ? 30 : 22,
                   spreadRadius: -4,
                   offset: const Offset(0, 8),

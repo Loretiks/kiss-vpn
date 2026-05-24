@@ -2,6 +2,7 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/platform/process_list.dart';
+import '../../shared/theme/kiss_theme.dart';
 import '../../shared/theme/tokens.dart';
 import '../../shared/widgets/gradient_button.dart';
 
@@ -84,11 +85,12 @@ class _ProcessPickerDialogState extends State<ProcessPickerDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return Dialog(
-      backgroundColor: KissColors.bg1,
+      backgroundColor: t.bg1,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(KissRadius.lg),
-        side: const BorderSide(color: KissColors.stroke),
+        side: BorderSide(color: t.stroke),
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 540, maxHeight: 620),
@@ -113,9 +115,9 @@ class _ProcessPickerDialogState extends State<ProcessPickerDialog> {
                 ],
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Выберите процесс из списка запущенных приложений.',
-                style: TextStyle(color: KissColors.textMid),
+                style: TextStyle(color: t.textMid),
               ),
               const SizedBox(height: KissSpacing.lg),
               SizedBox(
@@ -126,8 +128,8 @@ class _ProcessPickerDialogState extends State<ProcessPickerDialog> {
                   onChanged: (v) => setState(() => _query = v.trim()),
                   decoration: InputDecoration(
                     hintText: 'Поиск по названию или exe-файлу…',
-                    prefixIcon: const Icon(Icons.search_rounded,
-                        size: 18, color: KissColors.textLow),
+                    prefixIcon: Icon(Icons.search_rounded,
+                        size: 18, color: t.textLow),
                     suffixIcon: _query.isEmpty
                         ? null
                         : IconButton(
@@ -169,22 +171,23 @@ class _ProcessPickerDialogState extends State<ProcessPickerDialog> {
   }
 
   Widget _body() {
+    final t = KissTheme.of(context);
     if (_error != null) {
       return Center(
         child: Text(
           'Не удалось получить список процессов:\n$_error',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: KissColors.danger),
+          style: TextStyle(color: t.danger),
         ),
       );
     }
     if (_processes == null) {
-      return const Center(
+      return Center(
         child: SizedBox(
           width: 28,
           height: 28,
           child: CircularProgressIndicator(
-              strokeWidth: 2.6, color: KissColors.pink),
+              strokeWidth: 2.6, color: t.accent),
         ),
       );
     }
@@ -201,10 +204,10 @@ class _ProcessPickerDialogState extends State<ProcessPickerDialog> {
             .toList();
 
     if (processes.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           'Не найдено активных процессов.',
-          style: TextStyle(color: KissColors.textMid),
+          style: TextStyle(color: t.textMid),
         ),
       );
     }
@@ -212,7 +215,7 @@ class _ProcessPickerDialogState extends State<ProcessPickerDialog> {
       return Center(
         child: Text(
           'Нет совпадений по запросу «$_query»',
-          style: const TextStyle(color: KissColors.textLow),
+          style: TextStyle(color: t.textLow),
         ),
       );
     }
@@ -257,6 +260,7 @@ class _ProcessTileState extends State<_ProcessTile> {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final p = widget.process;
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -270,12 +274,12 @@ class _ProcessTileState extends State<_ProcessTile> {
               horizontal: KissSpacing.md, vertical: KissSpacing.sm + 2),
           decoration: BoxDecoration(
             color: _hover
-                ? KissColors.pink.withValues(alpha: 0.06)
-                : KissColors.bg2.withValues(alpha: 0.6),
+                ? t.accent.withValues(alpha: 0.06)
+                : t.bg2.withValues(alpha: 0.6),
             border: Border.all(
               color: _hover
-                  ? KissColors.pink.withValues(alpha: 0.4)
-                  : KissColors.stroke,
+                  ? t.accent.withValues(alpha: 0.4)
+                  : t.stroke,
             ),
             borderRadius: BorderRadius.circular(KissRadius.md),
           ),
@@ -311,8 +315,8 @@ class _ProcessTileState extends State<_ProcessTile> {
                         Flexible(
                           child: Text(
                             p.name,
-                            style: const TextStyle(
-                              color: KissColors.textHi,
+                            style: TextStyle(
+                              color: t.textHi,
                               fontWeight: FontWeight.w600,
                               fontSize: 13.5,
                             ),
@@ -327,13 +331,13 @@ class _ProcessTileState extends State<_ProcessTile> {
                                 horizontal: 6, vertical: 1),
                             decoration: BoxDecoration(
                               color:
-                                  KissColors.textLow.withValues(alpha: 0.12),
+                                  t.textLow.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
                               '×${p.instances}',
-                              style: const TextStyle(
-                                color: KissColors.textLow,
+                              style: TextStyle(
+                                color: t.textLow,
                                 fontWeight: FontWeight.w700,
                                 fontSize: 10,
                               ),
@@ -345,8 +349,8 @@ class _ProcessTileState extends State<_ProcessTile> {
                     const SizedBox(height: 2),
                     Text(
                       widget.subtitle,
-                      style: const TextStyle(
-                        color: KissColors.textLow,
+                      style: TextStyle(
+                        color: t.textLow,
                         fontSize: 11.5,
                         fontFamily: 'JetBrains Mono, Consolas, monospace',
                       ),
@@ -359,7 +363,7 @@ class _ProcessTileState extends State<_ProcessTile> {
               const SizedBox(width: KissSpacing.sm),
               Icon(
                 Icons.chevron_right_rounded,
-                color: _hover ? KissColors.pink : KissColors.textDim,
+                color: _hover ? t.accent : t.textDim,
                 size: 18,
               ),
             ],

@@ -210,8 +210,12 @@ final subscriptionRepositoryProvider = Provider<SubscriptionRepository>((ref) {
   );
 });
 
+/// Bumped after every subscription refresh so [proxiesProvider] re-runs.
+final subVersionProvider = StateProvider<int>((ref) => 0);
+
 /// Cached proxy list. Reads from disk asynchronously, then any widget can
 /// `ref.watch` it and re-render when a refresh updates the cache.
 final proxiesProvider = FutureProvider<List<VlessProxy>>((ref) async {
+  ref.watch(subVersionProvider);
   return await ref.watch(subscriptionRepositoryProvider).loadProxies();
 });

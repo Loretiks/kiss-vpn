@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../shared/theme/kiss_theme.dart';
 import '../../shared/theme/tokens.dart';
 import '../../shared/widgets/mesh_background.dart';
 import '../../shared/widgets/titlebar.dart';
@@ -64,9 +65,10 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final index = ref.watch(activeTabProvider);
     return Scaffold(
-      backgroundColor: KissColors.bg0,
+      backgroundColor: t.bg0,
       body: MeshBackground(
         intensity: index == 0 ? 1.0 : 0.55,
         child: Column(
@@ -132,12 +134,13 @@ class _NavRail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return Container(
       width: 84,
       padding: const EdgeInsets.symmetric(vertical: KissSpacing.lg),
-      decoration: const BoxDecoration(
-        color: Color(0x801A1A26),
-        border: Border(right: BorderSide(color: KissColors.stroke)),
+      decoration: BoxDecoration(
+        color: const Color(0x801A1A26),
+        border: Border(right: BorderSide(color: t.stroke)),
       ),
       child: Column(
         children: [
@@ -172,6 +175,7 @@ class _NavButtonState extends State<_NavButton> {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(
           horizontal: KissSpacing.sm, vertical: 2),
@@ -203,8 +207,8 @@ class _NavButtonState extends State<_NavButton> {
                     widget.item.icon,
                     size: 22,
                     color: widget.selected
-                        ? KissColors.pink
-                        : KissColors.textMid,
+                        ? t.accent
+                        : t.textMid,
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -214,8 +218,8 @@ class _NavButtonState extends State<_NavButton> {
                       fontWeight: FontWeight.w600,
                       letterSpacing: 0.2,
                       color: widget.selected
-                          ? KissColors.textHi
-                          : KissColors.textLow,
+                          ? t.textHi
+                          : t.textLow,
                     ),
                   ),
                 ],

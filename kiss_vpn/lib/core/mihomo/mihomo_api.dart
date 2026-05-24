@@ -130,22 +130,43 @@ class MihomoApi {
 
   // --------------------------------------------------------------- streams
 
+  IOWebSocketChannel? _trafficChannel;
+  IOWebSocketChannel? _logsChannel;
+
   /// Live traffic stream — each event is `{up: bytes, down: bytes}` per second.
   Stream<TrafficSample> trafficStream() {
-    final ch = _open('/traffic');
-    return ch.stream.map((event) {
+    _trafficChannel?.sink.close();
+    _trafficChannel = _open('/traffic');
+    return _trafficChannel!.stream.map((event) {
       final m = jsonDecode(event as String) as Map<String, dynamic>;
       return TrafficSample(up: (m['up'] as num).toInt(), down: (m['down'] as num).toInt());
-    });
+    }).handleError((_) {/* stream closed */});
+  }
+
+  void closeTrafficStream() {
+    _trafficChannel?.sink.close();
+    _trafficChannel = null;
   }
 
   /// Live logs (info/warning/error/debug — set ?level=).
   Stream<LogEntry> logsStream({String level = 'info'}) {
-    final ch = _open('/logs?level=$level');
-    return ch.stream.map((event) {
+    _logsChannel?.sink.close();
+    _logsChannel = _open('/logs?level=$level');
+    return _logsChannel!.stream.map((event) {
       final m = jsonDecode(event as String) as Map<String, dynamic>;
       return LogEntry(level: m['type'] as String, payload: m['payload'] as String);
-    });
+    }).handleError((_) {/* stream closed */});
+  }
+
+  void closeLogsStream() {
+    _logsChannel?.sink.close();
+    _logsChannel = null;
+  }
+
+  /// Close all open WebSocket channels.
+  void closeAll() {
+    closeTrafficStream();
+    closeLogsStream();
   }
 
   IOWebSocketChannel _open(String path) {

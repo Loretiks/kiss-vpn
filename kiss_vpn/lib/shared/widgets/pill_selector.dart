@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/kiss_theme.dart';
 import '../theme/tokens.dart';
 
 /// Single segmented control rendered as a rounded pill with an animated
@@ -22,25 +23,26 @@ class PillSelector<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(
           horizontal: KissSpacing.md, vertical: KissSpacing.sm),
       decoration: BoxDecoration(
-        color: KissColors.bg2,
+        color: t.bg2,
         borderRadius: BorderRadius.circular(KissRadius.pill),
-        border: Border.all(color: KissColors.stroke, width: 1),
+        border: Border.all(color: t.stroke, width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 16, color: KissColors.textLow),
+            Icon(icon, size: 16, color: t.textLow),
             const SizedBox(width: KissSpacing.sm),
           ],
           Text(
             label.toUpperCase(),
-            style: const TextStyle(
-              color: KissColors.textLow,
+            style: TextStyle(
+              color: t.textLow,
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.5,
@@ -79,6 +81,7 @@ class _PillItemWidget<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2),
       child: MouseRegion(
@@ -96,7 +99,7 @@ class _PillItemWidget<T> extends StatelessWidget {
               boxShadow: selected
                   ? [
                       BoxShadow(
-                        color: KissColors.pink.withValues(alpha: 0.35),
+                        color: t.accent.withValues(alpha: 0.35),
                         blurRadius: 14,
                         spreadRadius: -3,
                       ),
@@ -116,7 +119,7 @@ class _PillItemWidget<T> extends StatelessWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 12.5,
-                    color: selected ? Colors.white : KissColors.textMid,
+                    color: selected ? Colors.white : t.textMid,
                   ),
                 ),
               ],

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/mihomo/mihomo_api.dart';
+import '../../shared/theme/kiss_theme.dart';
 import '../../shared/theme/tokens.dart';
 import '../../shared/widgets/section_header.dart';
 
@@ -27,6 +28,7 @@ class _LogsPageState extends ConsumerState<LogsPage> {
   }
 
   void _attach() {
+    _sub?.cancel();
     _sub = _api.logsStream(level: 'info').listen(
       (e) {
         setState(() {
@@ -39,7 +41,17 @@ class _LogsPageState extends ConsumerState<LogsPage> {
           }
         });
       },
-      onError: (_) {/* core ещё не запущен — поток придёт позже */},
+      onError: (_) {
+        // Core stopped or restarted — retry after a brief delay
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) _attach();
+        });
+      },
+      onDone: () {
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) _attach();
+        });
+      },
     );
   }
 
@@ -50,21 +62,22 @@ class _LogsPageState extends ConsumerState<LogsPage> {
     super.dispose();
   }
 
-  Color _color(String level) {
+  Color _color(String level, KissTheme t) {
     switch (level.toLowerCase()) {
       case 'error':
-        return KissColors.danger;
+        return t.danger;
       case 'warning':
-        return KissColors.warning;
+        return t.warning;
       case 'debug':
-        return KissColors.textLow;
+        return t.textLow;
       default:
-        return KissColors.textMid;
+        return t.textMid;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(
           KissSpacing.x4, KissSpacing.x3, KissSpacing.x4, KissSpacing.x4),
@@ -81,15 +94,15 @@ class _LogsPageState extends ConsumerState<LogsPage> {
             child: Container(
               padding: const EdgeInsets.all(KissSpacing.lg),
               decoration: BoxDecoration(
-                color: KissColors.bg1.withValues(alpha: 0.85),
+                color: t.bg1.withValues(alpha: 0.85),
                 borderRadius: BorderRadius.circular(KissRadius.md),
-                border: Border.all(color: KissColors.stroke, width: 1),
+                border: Border.all(color: t.stroke, width: 1),
               ),
               child: _entries.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text(
                         'Ожидаем логи ядра — нажмите «Подключиться» на главной.',
-                        style: TextStyle(color: KissColors.textMid),
+                        style: TextStyle(color: t.textMid),
                       ),
                     )
                   : ListView.builder(
@@ -105,7 +118,7 @@ class _LogsPageState extends ConsumerState<LogsPage> {
                               fontFamily:
                                   'JetBrains Mono, Cascadia Mono, Consolas',
                               fontSize: 12.5,
-                              color: _color(e.level),
+                              color: _color(e.level, t),
                             ),
                           ),
                         );

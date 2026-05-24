@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/kiss_theme.dart';
 import '../theme/tokens.dart';
 import '../utils/format.dart';
 
@@ -22,12 +23,13 @@ class StatChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return Container(
       padding: const EdgeInsets.all(KissSpacing.lg),
       decoration: BoxDecoration(
-        color: KissColors.bg2.withValues(alpha: 0.6),
+        color: t.bg2.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(KissRadius.md),
-        border: Border.all(color: KissColors.stroke, width: 1),
+        border: Border.all(color: t.stroke, width: 1),
       ),
       child: Row(
         children: [
@@ -47,8 +49,8 @@ class StatChip extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
-                    color: KissColors.textMid,
+                  style: TextStyle(
+                    color: t.textMid,
                     fontSize: 11.5,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.4,
@@ -57,17 +59,17 @@ class StatChip extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   '${Format.bytes(bytesPerSecond)}/с',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 18,
-                    color: KissColors.textHi,
-                    fontFeatures: [FontFeature.tabularFigures()],
+                    color: t.textHi,
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
                 Text(
                   'Всего ${Format.bytes(totalBytes)}',
-                  style: const TextStyle(
-                    color: KissColors.textLow,
+                  style: TextStyle(
+                    color: t.textLow,
                     fontSize: 11,
                   ),
                 ),

@@ -11,6 +11,18 @@ class TrayService with TrayListener {
   TrayService._();
   static final TrayService instance = TrayService._();
 
+  VoidCallback? onToggle;
+  VoidCallback? onQuit;
+
+  void setCallbacks({VoidCallback? onToggle, VoidCallback? onQuit}) {
+    this.onToggle = onToggle;
+    this.onQuit = onQuit;
+  }
+
+  void updateConnected(bool connected) {
+    _refreshMenu(connected: connected);
+  }
+
   bool _initialized = false;
 
   Future<void> init() async {
@@ -67,12 +79,18 @@ class TrayService with TrayListener {
         windowManager.show();
         break;
       case 'quit':
-        windowManager.destroy();
+        if (onQuit != null) {
+          onQuit!.call();
+        } else {
+          windowManager.destroy();
+        }
         break;
       case 'toggle':
-        // Connect toggling is wired in by HomeViewModel via a callback once
-        // the tray is hooked into the VPN controller (Фаза 1+).
-        windowManager.show();
+        if (onToggle != null) {
+          onToggle!.call();
+        } else {
+          windowManager.show();
+        }
         break;
     }
   }

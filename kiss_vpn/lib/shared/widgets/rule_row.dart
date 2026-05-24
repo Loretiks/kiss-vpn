@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/rules/rule.dart';
 import '../../core/rules/rule_kind_meta.dart';
+import '../theme/kiss_theme.dart';
 import '../theme/tokens.dart';
 
 /// Single split-tunnel rule row.
@@ -41,6 +42,7 @@ class _RuleRowState extends State<RuleRow> {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final dim = !widget.enabled;
     return MouseRegion(
       onEnter: (_) => setState(() => _hover = true),
@@ -51,11 +53,11 @@ class _RuleRowState extends State<RuleRow> {
             horizontal: KissSpacing.md, vertical: KissSpacing.sm + 2),
         decoration: BoxDecoration(
           color: _hover
-              ? KissColors.bg2
-              : KissColors.bg2.withValues(alpha: 0.6),
+              ? t.bg2
+              : t.bg2.withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(KissRadius.md),
           border: Border.all(
-            color: _hover ? KissColors.strokeBright : KissColors.stroke,
+            color: _hover ? t.strokeBright : t.stroke,
           ),
         ),
         child: Opacity(
@@ -73,10 +75,10 @@ class _RuleRowState extends State<RuleRow> {
                   children: [
                     Text(
                       widget.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 13.5,
-                        color: KissColors.textHi,
+                        color: t.textHi,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -84,8 +86,8 @@ class _RuleRowState extends State<RuleRow> {
                     const SizedBox(height: 2),
                     Text(
                       widget.subtitle,
-                      style: const TextStyle(
-                        color: KissColors.textLow,
+                      style: TextStyle(
+                        color: t.textLow,
                         fontSize: 11.5,
                         fontFamily: 'JetBrains Mono, Consolas, monospace',
                       ),
@@ -124,12 +126,15 @@ class _RuleRowState extends State<RuleRow> {
 class _DragHandle extends StatelessWidget {
   const _DragHandle();
   @override
-  Widget build(BuildContext context) => const SizedBox(
+  Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
+    return SizedBox(
         width: 18,
         height: 22,
         child: Icon(Icons.drag_indicator,
-            size: 16, color: KissColors.textDim),
+            size: 16, color: t.textDim),
       );
+  }
 }
 
 class _KindIcon extends StatelessWidget {
@@ -158,7 +163,8 @@ class _RouteBadge extends StatelessWidget {
   final bool viaVpn;
   @override
   Widget build(BuildContext context) {
-    final color = viaVpn ? KissColors.pink : KissColors.textLow;
+    final t = KissTheme.of(context);
+    final color = viaVpn ? t.accent : t.textLow;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
@@ -198,9 +204,10 @@ class _IconBtnState extends State<_IconBtn> {
   bool _hover = false;
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final color = _hover
-        ? (widget.danger ? KissColors.danger : KissColors.textHi)
-        : KissColors.textLow;
+        ? (widget.danger ? t.danger : t.textHi)
+        : t.textLow;
     final btn = MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hover = true),
@@ -215,7 +222,7 @@ class _IconBtnState extends State<_IconBtn> {
           decoration: BoxDecoration(
             color: _hover
                 ? (widget.danger
-                    ? KissColors.danger.withValues(alpha: 0.10)
+                    ? t.danger.withValues(alpha: 0.10)
                     : Colors.white.withValues(alpha: 0.04))
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(8),

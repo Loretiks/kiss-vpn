@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/router.dart';
+import '../../shared/theme/kiss_theme.dart';
 import '../../shared/theme/tokens.dart';
 import '../../shared/widgets/gradient_button.dart';
 import '../../shared/widgets/mesh_background.dart';
+import '../home/home_shell.dart';
 
-class OnboardingPage extends StatelessWidget {
+class OnboardingPage extends ConsumerWidget {
   const OnboardingPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = KissTheme.of(context);
     return Scaffold(
       body: MeshBackground(
         intensity: 0.8,
@@ -50,10 +54,10 @@ class OnboardingPage extends StatelessWidget {
                         ?.copyWith(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: KissSpacing.sm),
-                  const Text(
+                  Text(
                     'Вставьте ссылку с подпиской из личного кабинета kissmain.ru — остальное за нас.',
                     style: TextStyle(
-                      color: KissColors.textMid,
+                      color: t.textMid,
                       height: 1.5,
                       fontSize: 14,
                     ),
@@ -62,8 +66,11 @@ class OnboardingPage extends StatelessWidget {
                   GradientButton(
                     label: 'Продолжить',
                     icon: Icons.arrow_forward_rounded,
-                    onPressed: () => Navigator.of(context)
-                        .pushReplacementNamed(AppRouter.subscription),
+                    onPressed: () {
+                      ref.read(activeTabProvider.notifier).state = HomeTab.subscription;
+                      Navigator.of(context)
+                          .pushReplacementNamed(AppRouter.home);
+                    },
                   ),
                 ],
               ),

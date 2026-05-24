@@ -6,6 +6,7 @@ import '../../core/rules/server_selection.dart';
 import '../../core/storage/settings.dart';
 import '../../core/subscription/subscription_repository.dart';
 import '../../core/subscription/vless_proxy.dart';
+import '../../shared/theme/kiss_theme.dart';
 import '../../shared/theme/tokens.dart';
 import '../../shared/utils/country.dart';
 import '../../shared/widgets/connect_button.dart';
@@ -19,6 +20,7 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = KissTheme.of(context);
     final vpn = ref.watch(vpnControllerProvider);
     final settings = ref.watch(settingsControllerProvider);
     final settingsCtl = ref.read(settingsControllerProvider.notifier);
@@ -62,7 +64,7 @@ class HomePage extends ConsumerWidget {
                               icon: Icons.arrow_downward_rounded,
                               bytesPerSecond: vpn.downloadBps,
                               totalBytes: vpn.totalDown,
-                              color: KissColors.success,
+                              color: t.success,
                             ),
                           ),
                           const SizedBox(width: KissSpacing.md),
@@ -72,7 +74,7 @@ class HomePage extends ConsumerWidget {
                               icon: Icons.arrow_upward_rounded,
                               bytesPerSecond: vpn.uploadBps,
                               totalBytes: vpn.totalUp,
-                              color: KissColors.violet,
+                              color: t.accentAlt,
                             ),
                           ),
                         ],
@@ -151,14 +153,6 @@ class _StatusLine extends StatelessWidget {
   const _StatusLine({required this.state});
   final VpnState state;
 
-  Color get _dotColor => switch (state.status) {
-        VpnStatus.connected => KissColors.success,
-        VpnStatus.connecting => KissColors.warning,
-        VpnStatus.disconnecting => KissColors.warning,
-        VpnStatus.error => KissColors.danger,
-        VpnStatus.disconnected => KissColors.textLow,
-      };
-
   String get _label => switch (state.status) {
         VpnStatus.connected => state.usingTun
             ? 'Подключено • TUN'
@@ -171,6 +165,14 @@ class _StatusLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
+    final dotColor = switch (state.status) {
+      VpnStatus.connected => t.success,
+      VpnStatus.connecting => t.warning,
+      VpnStatus.disconnecting => t.warning,
+      VpnStatus.error => t.danger,
+      VpnStatus.disconnected => t.textLow,
+    };
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -178,19 +180,19 @@ class _StatusLine extends StatelessWidget {
           width: 8,
           height: 8,
           decoration: BoxDecoration(
-            color: _dotColor,
+            color: dotColor,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                  color: _dotColor.withValues(alpha: 0.55), blurRadius: 8),
+                  color: dotColor.withValues(alpha: 0.55), blurRadius: 8),
             ],
           ),
         ),
         const SizedBox(width: KissSpacing.sm),
         Text(
           _label,
-          style: const TextStyle(
-            color: KissColors.textMid,
+          style: TextStyle(
+            color: t.textMid,
             fontWeight: FontWeight.w600,
             fontSize: 13,
             letterSpacing: 0.3,
@@ -206,6 +208,7 @@ class _ServerLine extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = KissTheme.of(context);
     final vpn = ref.watch(vpnControllerProvider);
     final saved = ref.watch(serverSelectionProvider);
     final name = vpn.currentServer ?? saved;
@@ -225,21 +228,21 @@ class _ServerLine extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(
                 horizontal: KissSpacing.lg, vertical: KissSpacing.lg),
             decoration: BoxDecoration(
-              color: KissColors.bg2.withValues(alpha: 0.6),
+              color: t.bg2.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(KissRadius.md),
-              border: Border.all(color: KissColors.stroke, width: 1),
+              border: Border.all(color: t.stroke, width: 1),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.public_off_rounded, color: KissColors.textLow),
-                SizedBox(width: KissSpacing.md),
+                Icon(Icons.public_off_rounded, color: t.textLow),
+                const SizedBox(width: KissSpacing.md),
                 Expanded(
                   child: Text(
                     'Сервер не выбран — нажмите, чтобы выбрать.',
-                    style: TextStyle(color: KissColors.textMid),
+                    style: TextStyle(color: t.textMid),
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded, color: KissColors.textLow),
+                Icon(Icons.chevron_right_rounded, color: t.textLow),
               ],
             ),
           ),
@@ -267,14 +270,14 @@ class _ServerLine extends ConsumerWidget {
       child: InkWell(
         onTap: openServers,
         borderRadius: BorderRadius.circular(KissRadius.md),
-        splashColor: KissColors.violet.withValues(alpha: 0.08),
-        highlightColor: KissColors.violet.withValues(alpha: 0.04),
+        splashColor: t.accentAlt.withValues(alpha: 0.08),
+        highlightColor: t.accentAlt.withValues(alpha: 0.04),
         child: Container(
           padding: const EdgeInsets.all(KissSpacing.lg),
           decoration: BoxDecoration(
-            color: KissColors.bg2.withValues(alpha: 0.6),
+            color: t.bg2.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(KissRadius.md),
-            border: Border.all(color: KissColors.stroke, width: 1),
+            border: Border.all(color: t.stroke, width: 1),
           ),
           child: Row(
             children: [
@@ -289,10 +292,10 @@ class _ServerLine extends ConsumerWidget {
                     Flexible(
                       child: Text(
                         country.clean.isEmpty ? name : country.clean,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
-                          color: KissColors.textHi,
+                          color: t.textHi,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -304,16 +307,16 @@ class _ServerLine extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 1),
                         decoration: BoxDecoration(
-                          color: KissColors.violet.withValues(alpha: 0.15),
+                          color: t.accentAlt.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(
                               color:
-                                  KissColors.violet.withValues(alpha: 0.4)),
+                                  t.accentAlt.withValues(alpha: 0.4)),
                         ),
-                        child: const Text(
+                        child: Text(
                           'ВЫБРАН',
                           style: TextStyle(
-                            color: KissColors.violet,
+                            color: t.accentAlt,
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.8,
@@ -326,9 +329,9 @@ class _ServerLine extends ConsumerWidget {
                 const SizedBox(height: 2),
                 Text(
                   endpoint ?? '—',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'JetBrains Mono',
-                    color: KissColors.textLow,
+                    color: t.textLow,
                     fontSize: 12,
                   ),
                 ),
@@ -340,21 +343,21 @@ class _ServerLine extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(
                   horizontal: KissSpacing.md, vertical: 6),
               decoration: BoxDecoration(
-                color: KissColors.bg3,
+                color: t.bg3,
                 borderRadius: BorderRadius.circular(KissRadius.pill),
               ),
               child: Text(
                 '${vpn.latencyMs} мс',
-                style: const TextStyle(
-                  color: KissColors.success,
+                style: TextStyle(
+                  color: t.success,
                   fontWeight: FontWeight.w700,
                   fontSize: 12,
                 ),
               ),
             ),
           const SizedBox(width: KissSpacing.sm),
-          const Icon(Icons.chevron_right_rounded,
-              color: KissColors.textLow, size: 18),
+          Icon(Icons.chevron_right_rounded,
+              color: t.textLow, size: 18),
         ],
       ),
     ),
@@ -369,26 +372,27 @@ class _ErrorBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return Container(
       padding: const EdgeInsets.all(KissSpacing.lg),
       constraints: const BoxConstraints(maxWidth: 580),
       decoration: BoxDecoration(
-        color: KissColors.danger.withValues(alpha: 0.08),
+        color: t.danger.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(KissRadius.md),
         border: Border.all(
-            color: KissColors.danger.withValues(alpha: 0.4), width: 1),
+            color: t.danger.withValues(alpha: 0.4), width: 1),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.error_outline,
-              color: KissColors.danger, size: 18),
+          Icon(Icons.error_outline,
+              color: t.danger, size: 18),
           const SizedBox(width: KissSpacing.md),
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(
-                color: KissColors.danger,
+              style: TextStyle(
+                color: t.danger,
                 fontSize: 12.5,
                 fontFamily: 'JetBrains Mono',
               ),

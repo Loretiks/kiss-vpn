@@ -1,6 +1,7 @@
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 
+import '../theme/kiss_theme.dart';
 import '../theme/tokens.dart';
 import '../utils/country.dart';
 
@@ -18,6 +19,7 @@ class FlagBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final code = country.code;
     final inner = size - 4; // leave a 2-px border ring
     final radius = BorderRadius.circular(KissRadius.md);
@@ -26,9 +28,9 @@ class FlagBadge extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: KissColors.bg3,
+        color: t.bg3,
         borderRadius: radius,
-        border: Border.all(color: KissColors.stroke, width: 1),
+        border: Border.all(color: t.stroke, width: 1),
       ),
       alignment: Alignment.center,
       child: code == null || code.length != 2
@@ -37,7 +39,7 @@ class FlagBadge extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: size * 0.3,
-                color: KissColors.textMid,
+                color: t.textMid,
               ),
             )
           : ClipRRect(

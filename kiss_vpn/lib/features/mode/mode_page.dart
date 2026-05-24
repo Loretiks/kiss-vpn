@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/rules/rule.dart';
 import '../../core/storage/settings.dart';
+import '../../shared/theme/kiss_theme.dart';
 import '../../shared/theme/tokens.dart';
 import '../../shared/widgets/gradient_button.dart';
 import '../../shared/widgets/mode_card.dart';
@@ -69,6 +70,7 @@ class _Header extends ConsumerWidget {
   const _Header();
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = KissTheme.of(context);
     final rules = ref.watch(rulesControllerProvider);
     final enabled = rules.where((r) => r.enabled).length;
     final viaVpn = rules.where((r) => r.enabled && r.viaVpn).length;
@@ -77,10 +79,10 @@ class _Header extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Маршрутизация',
           style: TextStyle(
-            color: KissColors.textLow,
+            color: t.textLow,
             fontWeight: FontWeight.w700,
             fontSize: 11,
             letterSpacing: 2,
@@ -101,26 +103,26 @@ class _Header extends ConsumerWidget {
             _StatChip(
               label: 'активно',
               value: '$enabled',
-              accent: KissColors.success,
+              accent: t.success,
             ),
             const SizedBox(width: KissSpacing.sm),
             _StatChip(
               label: 'VPN',
               value: '$viaVpn',
-              accent: KissColors.pink,
+              accent: t.accent,
             ),
             const SizedBox(width: KissSpacing.sm),
             _StatChip(
               label: 'прямо',
               value: '$direct',
-              accent: KissColors.textLow,
+              accent: t.textLow,
             ),
           ],
         ),
         const SizedBox(height: 6),
-        const Text(
+        Text(
           'Решите, какой трафик идёт в туннель — весь сразу или только из выбранных приложений и сайтов.',
-          style: TextStyle(color: KissColors.textMid, height: 1.5),
+          style: TextStyle(color: t.textMid, height: 1.5),
         ),
       ],
     );
@@ -131,19 +133,21 @@ class _StatChip extends StatelessWidget {
   const _StatChip({
     required this.label,
     required this.value,
-    this.accent = KissColors.textMid,
+    this.accent,
   });
   final String label;
   final String value;
-  final Color accent;
+  final Color? accent;
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
+    final effectiveAccent = accent ?? t.textMid;
     return Container(
       padding:
           const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: KissColors.bg2.withValues(alpha: 0.7),
-        border: Border.all(color: KissColors.stroke),
+        color: t.bg2.withValues(alpha: 0.7),
+        border: Border.all(color: t.stroke),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -154,18 +158,18 @@ class _StatChip extends StatelessWidget {
             height: 6,
             margin: const EdgeInsets.only(right: 6),
             decoration: BoxDecoration(
-              color: accent,
+              color: effectiveAccent,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                    color: accent.withValues(alpha: 0.5), blurRadius: 6),
+                    color: effectiveAccent.withValues(alpha: 0.5), blurRadius: 6),
               ],
             ),
           ),
           Text(
             value,
-            style: const TextStyle(
-              color: KissColors.textHi,
+            style: TextStyle(
+              color: t.textHi,
               fontWeight: FontWeight.w700,
               fontSize: 13,
             ),
@@ -173,8 +177,8 @@ class _StatChip extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             label,
-            style: const TextStyle(
-              color: KissColors.textLow,
+            style: TextStyle(
+              color: t.textLow,
               fontSize: 11,
             ),
           ),
@@ -188,22 +192,23 @@ class _ScopeHint extends StatelessWidget {
   const _ScopeHint();
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return Container(
       padding: const EdgeInsets.all(KissSpacing.lg),
       decoration: BoxDecoration(
-        color: KissColors.bg2.withValues(alpha: 0.6),
+        color: t.bg2.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(KissRadius.md),
-        border: Border.all(color: KissColors.stroke, width: 1),
+        border: Border.all(color: t.stroke, width: 1),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.info_outline, color: KissColors.textLow, size: 18),
-          SizedBox(width: KissSpacing.md),
+          Icon(Icons.info_outline, color: t.textLow, size: 18),
+          const SizedBox(width: KissSpacing.md),
           Expanded(
             child: Text(
               'В режиме «Весь ПК» правила не применяются — VPN маршрутизирует всё. Чтобы настроить точечный обход, выберите «По приложениям».',
               style: TextStyle(
-                color: KissColors.textMid,
+                color: t.textMid,
                 fontSize: 13,
                 height: 1.5,
               ),
@@ -222,9 +227,12 @@ class _RulesSection extends ConsumerStatefulWidget {
   ConsumerState<_RulesSection> createState() => _RulesSectionState();
 }
 
+enum _RuleSort { none, enabledFirst, disabledFirst }
+
 class _RulesSectionState extends ConsumerState<_RulesSection> {
   final _searchCtl = TextEditingController();
   String _query = '';
+  _RuleSort _sort = _RuleSort.none;
 
   @override
   void dispose() {
@@ -288,13 +296,14 @@ class _RulesSectionState extends ConsumerState<_RulesSection> {
   }
 
   Future<void> _confirmDelete(SplitRule rule) async {
+    final t = KissTheme.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: KissColors.bg1,
+        backgroundColor: t.bg1,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(KissRadius.lg),
-          side: const BorderSide(color: KissColors.stroke),
+          side: BorderSide(color: t.stroke),
         ),
         title: const Text('Удалить правило?'),
         content: Text('«${rule.label}» больше не будет применяться.'),
@@ -305,7 +314,7 @@ class _RulesSectionState extends ConsumerState<_RulesSection> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: KissColors.danger),
+            style: TextButton.styleFrom(foregroundColor: t.danger),
             child: const Text('Удалить'),
           ),
         ],
@@ -370,14 +379,26 @@ class _RulesSectionState extends ConsumerState<_RulesSection> {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final all = ref.watch(rulesControllerProvider);
-    final filtered = _query.isEmpty
-        ? all
+    var filtered = _query.isEmpty
+        ? all.toList()
         : all
             .where((r) =>
                 r.label.toLowerCase().contains(_query.toLowerCase()) ||
                 r.value.toLowerCase().contains(_query.toLowerCase()))
             .toList();
+    if (_sort == _RuleSort.enabledFirst) {
+      filtered.sort((a, b) {
+        if (a.enabled != b.enabled) return a.enabled ? -1 : 1;
+        return 0;
+      });
+    } else if (_sort == _RuleSort.disabledFirst) {
+      filtered.sort((a, b) {
+        if (a.enabled != b.enabled) return a.enabled ? 1 : -1;
+        return 0;
+      });
+    }
 
     return Column(
       key: const ValueKey('rules-section'),
@@ -385,13 +406,13 @@ class _RulesSectionState extends ConsumerState<_RulesSection> {
       children: [
         Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
                 'Настройка правил',
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 16,
-                  color: KissColors.textHi,
+                  color: t.textHi,
                 ),
               ),
             ),
@@ -419,8 +440,8 @@ class _RulesSectionState extends ConsumerState<_RulesSection> {
                   onChanged: (v) => setState(() => _query = v.trim()),
                   decoration: InputDecoration(
                     hintText: 'Поиск по правилам…',
-                    prefixIcon: const Icon(Icons.search_rounded,
-                        size: 18, color: KissColors.textLow),
+                    prefixIcon: Icon(Icons.search_rounded,
+                        size: 18, color: t.textLow),
                     suffixIcon: _query.isEmpty
                         ? null
                         : IconButton(
@@ -438,18 +459,43 @@ class _RulesSectionState extends ConsumerState<_RulesSection> {
               ),
             ),
             const SizedBox(width: KissSpacing.sm),
-            if (all.isNotEmpty)
+            if (all.isNotEmpty) ...[
               _BulkBtn(
                 tooltip: 'Включить все',
                 icon: Icons.toggle_on_rounded,
                 onTap: () => _toggleAll(true),
               ),
-            if (all.isNotEmpty)
               _BulkBtn(
                 tooltip: 'Выключить все',
                 icon: Icons.toggle_off_rounded,
                 onTap: () => _toggleAll(false),
               ),
+              const SizedBox(width: 2),
+              Container(
+                width: 1,
+                height: 22,
+                color: t.stroke,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+              ),
+              _BulkBtn(
+                tooltip: 'Вкл. сверху',
+                icon: Icons.arrow_upward_rounded,
+                active: _sort == _RuleSort.enabledFirst,
+                onTap: () => setState(() => _sort =
+                    _sort == _RuleSort.enabledFirst
+                        ? _RuleSort.none
+                        : _RuleSort.enabledFirst),
+              ),
+              _BulkBtn(
+                tooltip: 'Выкл. сверху',
+                icon: Icons.arrow_downward_rounded,
+                active: _sort == _RuleSort.disabledFirst,
+                onTap: () => setState(() => _sort =
+                    _sort == _RuleSort.disabledFirst
+                        ? _RuleSort.none
+                        : _RuleSort.disabledFirst),
+              ),
+            ],
           ],
         ),
         const SizedBox(height: KissSpacing.md),
@@ -548,7 +594,8 @@ class _LinkActionState extends State<_LinkAction> {
   bool _hover = false;
   @override
   Widget build(BuildContext context) {
-    final color = _hover ? KissColors.pink : KissColors.violet;
+    final t = KissTheme.of(context);
+    final color = _hover ? t.accent : t.accentAlt;
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hover = true),
@@ -579,12 +626,15 @@ class _BulkBtn extends StatelessWidget {
     required this.tooltip,
     required this.icon,
     required this.onTap,
+    this.active = false,
   });
   final String tooltip;
   final IconData icon;
   final VoidCallback onTap;
+  final bool active;
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return Tooltip(
       message: tooltip,
       child: MouseRegion(
@@ -596,12 +646,20 @@ class _BulkBtn extends StatelessWidget {
             height: 38,
             margin: const EdgeInsets.only(left: 4),
             decoration: BoxDecoration(
-              color: KissColors.bg2.withValues(alpha: 0.6),
+              color: active
+                  ? t.accent.withValues(alpha: 0.15)
+                  : t.bg2.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(KissRadius.sm),
-              border: Border.all(color: KissColors.stroke),
+              border: Border.all(
+                color: active
+                    ? t.accent.withValues(alpha: 0.5)
+                    : t.stroke,
+              ),
             ),
             alignment: Alignment.center,
-            child: Icon(icon, size: 18, color: KissColors.textMid),
+            child: Icon(icon,
+                size: 18,
+                color: active ? t.accent : t.textMid),
           ),
         ),
       ),
@@ -614,17 +672,18 @@ class _NoMatches extends StatelessWidget {
   final String query;
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return Container(
       padding: const EdgeInsets.all(KissSpacing.lg),
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: KissColors.bg2.withValues(alpha: 0.4),
+        color: t.bg2.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(KissRadius.md),
-        border: Border.all(color: KissColors.stroke),
+        border: Border.all(color: t.stroke),
       ),
       child: Text(
         'Нет правил по запросу «$query»',
-        style: const TextStyle(color: KissColors.textLow),
+        style: TextStyle(color: t.textLow),
       ),
     );
   }
@@ -636,12 +695,13 @@ class _EmptyState extends StatelessWidget {
   final VoidCallback onTemplates;
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return Container(
       padding: const EdgeInsets.all(KissSpacing.x3),
       decoration: BoxDecoration(
-        color: KissColors.bg2.withValues(alpha: 0.4),
+        color: t.bg2.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(KissRadius.md),
-        border: Border.all(color: KissColors.stroke),
+        border: Border.all(color: t.stroke),
       ),
       child: Column(
         children: [
@@ -649,26 +709,26 @@ class _EmptyState extends StatelessWidget {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: KissColors.pink.withValues(alpha: 0.12),
+              color: t.accent.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(Icons.rule_folder_outlined,
-                color: KissColors.pink, size: 28),
+            child: Icon(Icons.rule_folder_outlined,
+                color: t.accent, size: 28),
           ),
           const SizedBox(height: KissSpacing.md),
-          const Text(
+          Text(
             'Правил пока нет',
             style: TextStyle(
               fontWeight: FontWeight.w700,
               fontSize: 15,
-              color: KissColors.textHi,
+              color: t.textHi,
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             'Добавьте приложение или сайт чтобы маршрутизировать только их через VPN.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: KissColors.textMid, height: 1.5),
+            style: TextStyle(color: t.textMid, height: 1.5),
           ),
           const SizedBox(height: KissSpacing.lg),
           Row(
@@ -823,11 +883,12 @@ class _TemplatesDialogState extends State<_TemplatesDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return Dialog(
-      backgroundColor: KissColors.bg1,
+      backgroundColor: t.bg1,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(KissRadius.lg),
-        side: const BorderSide(color: KissColors.stroke),
+        side: BorderSide(color: t.stroke),
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 540, maxHeight: 620),
@@ -841,9 +902,9 @@ class _TemplatesDialogState extends State<_TemplatesDialog> {
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 6),
-              const Text(
+              Text(
                 'Выберите один или несколько — правила добавятся в общий список.',
-                style: TextStyle(color: KissColors.textMid),
+                style: TextStyle(color: t.textMid),
               ),
               const SizedBox(height: KissSpacing.lg),
               Expanded(
@@ -852,7 +913,7 @@ class _TemplatesDialogState extends State<_TemplatesDialog> {
                   separatorBuilder: (_, __) =>
                       const SizedBox(height: KissSpacing.sm),
                   itemBuilder: (_, i) {
-                    final t = _templates[i];
+                    final tmpl = _templates[i];
                     final picked = _picked.contains(i);
                     return MouseRegion(
                       cursor: SystemMouseCursors.click,
@@ -869,14 +930,14 @@ class _TemplatesDialogState extends State<_TemplatesDialog> {
                           padding: const EdgeInsets.all(KissSpacing.md + 2),
                           decoration: BoxDecoration(
                             color: picked
-                                ? KissColors.pink.withValues(alpha: 0.08)
-                                : KissColors.bg2,
+                                ? t.accent.withValues(alpha: 0.08)
+                                : t.bg2,
                             borderRadius:
                                 BorderRadius.circular(KissRadius.md),
                             border: Border.all(
                               color: picked
-                                  ? KissColors.pink.withValues(alpha: 0.5)
-                                  : KissColors.stroke,
+                                  ? t.accent.withValues(alpha: 0.5)
+                                  : t.stroke,
                               width: picked ? 1.4 : 1,
                             ),
                           ),
@@ -886,12 +947,12 @@ class _TemplatesDialogState extends State<_TemplatesDialog> {
                                 width: 38,
                                 height: 38,
                                 decoration: BoxDecoration(
-                                  color: KissColors.violet
+                                  color: t.accentAlt
                                       .withValues(alpha: 0.16),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: Icon(t.icon,
-                                    color: KissColors.violet, size: 20),
+                                child: Icon(tmpl.icon,
+                                    color: t.accentAlt, size: 20),
                               ),
                               const SizedBox(width: KissSpacing.md),
                               Expanded(
@@ -900,18 +961,18 @@ class _TemplatesDialogState extends State<_TemplatesDialog> {
                                       CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      t.title,
-                                      style: const TextStyle(
-                                        color: KissColors.textHi,
+                                      tmpl.title,
+                                      style: TextStyle(
+                                        color: t.textHi,
                                         fontWeight: FontWeight.w600,
                                         fontSize: 14,
                                       ),
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      '${t.rules.length} правил · ${t.subtitle}',
-                                      style: const TextStyle(
-                                        color: KissColors.textMid,
+                                      '${tmpl.rules.length} правил · ${tmpl.subtitle}',
+                                      style: TextStyle(
+                                        color: t.textMid,
                                         fontSize: 12,
                                       ),
                                     ),
@@ -923,8 +984,8 @@ class _TemplatesDialogState extends State<_TemplatesDialog> {
                                     ? Icons.check_circle
                                     : Icons.radio_button_unchecked,
                                 color: picked
-                                    ? KissColors.pink
-                                    : KissColors.textDim,
+                                    ? t.accent
+                                    : t.textDim,
                                 size: 22,
                               ),
                             ],

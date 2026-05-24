@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/kiss_theme.dart';
 import '../theme/tokens.dart';
 
 /// Compact horizontal control: icon + label + bold value + cycle hint.
@@ -29,6 +30,7 @@ class _OptionCardState extends State<OptionCard> {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final card = MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hover = true),
@@ -40,22 +42,22 @@ class _OptionCardState extends State<OptionCard> {
           padding: const EdgeInsets.symmetric(
               horizontal: KissSpacing.md + 2, vertical: KissSpacing.sm + 2),
           decoration: BoxDecoration(
-            color: KissColors.bg2.withValues(alpha: _hover ? 0.85 : 0.6),
+            color: t.bg2.withValues(alpha: _hover ? 0.85 : 0.6),
             borderRadius: BorderRadius.circular(KissRadius.md),
             border: Border.all(
               color: _hover
-                  ? KissColors.violet.withValues(alpha: 0.5)
-                  : KissColors.stroke,
+                  ? t.accentAlt.withValues(alpha: 0.5)
+                  : t.stroke,
             ),
           ),
           child: Row(
             children: [
-              Icon(widget.icon, size: 16, color: KissColors.violet),
+              Icon(widget.icon, size: 16, color: t.accentAlt),
               const SizedBox(width: 10),
               Text(
                 widget.label,
-                style: const TextStyle(
-                  color: KissColors.textMid,
+                style: TextStyle(
+                  color: t.textMid,
                   fontSize: 12.5,
                   fontWeight: FontWeight.w500,
                 ),
@@ -63,17 +65,17 @@ class _OptionCardState extends State<OptionCard> {
               const SizedBox(width: 8),
               Text(
                 widget.value,
-                style: const TextStyle(
-                  color: KissColors.textHi,
+                style: TextStyle(
+                  color: t.textHi,
                   fontSize: 13.5,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               const Spacer(),
-              const Icon(
+              Icon(
                 Icons.unfold_more_rounded,
                 size: 14,
-                color: KissColors.textDim,
+                color: t.textDim,
               ),
             ],
           ),

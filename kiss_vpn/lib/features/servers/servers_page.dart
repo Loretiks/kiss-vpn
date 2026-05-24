@@ -7,6 +7,7 @@ import '../../core/probes/tcp_ping.dart';
 import '../../core/rules/server_selection.dart';
 import '../../core/subscription/subscription_repository.dart';
 import '../../core/subscription/vless_proxy.dart';
+import '../../shared/theme/kiss_theme.dart';
 import '../../shared/theme/tokens.dart';
 import '../../shared/widgets/gradient_button.dart';
 import '../../shared/widgets/section_header.dart';
@@ -93,6 +94,7 @@ class _ServersPageState extends ConsumerState<ServersPage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final vpn = ref.watch(vpnControllerProvider);
     final busy = vpn.status == VpnStatus.connecting ||
         vpn.status == VpnStatus.disconnecting;
@@ -121,22 +123,22 @@ class _ServersPageState extends ConsumerState<ServersPage> {
                   ),
           ),
           const SizedBox(height: KissSpacing.xl),
-          Expanded(child: _body(vpn)),
+          Expanded(child: _body(vpn, t)),
         ],
       ),
     );
   }
 
-  Widget _body(VpnState vpn) {
+  Widget _body(VpnState vpn, KissTheme t) {
     if (_loading) {
-      return const Center(
-          child: CircularProgressIndicator(color: KissColors.pink));
+      return Center(
+          child: CircularProgressIndicator(color: t.accent));
     }
     if (_proxies.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           'Список пуст — добавьте подписку на вкладке «Подписка».',
-          style: TextStyle(color: KissColors.textMid),
+          style: TextStyle(color: t.textMid),
         ),
       );
     }
@@ -162,28 +164,29 @@ class _PingingSpinner extends StatelessWidget {
   const _PingingSpinner();
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(
           horizontal: KissSpacing.lg, vertical: KissSpacing.sm + 1),
       decoration: BoxDecoration(
-        color: KissColors.bg2,
-        border: Border.all(color: KissColors.stroke),
+        color: t.bg2,
+        border: Border.all(color: t.stroke),
         borderRadius: BorderRadius.circular(KissRadius.pill),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
             width: 14,
             height: 14,
             child: CircularProgressIndicator(
-                strokeWidth: 2, color: KissColors.pink),
+                strokeWidth: 2, color: t.accent),
           ),
           SizedBox(width: KissSpacing.sm),
           Text(
             'Пингуем…',
             style: TextStyle(
-              color: KissColors.textHi,
+              color: t.textHi,
               fontWeight: FontWeight.w600,
               fontSize: 13,
             ),

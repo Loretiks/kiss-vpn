@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/kiss_theme.dart';
 import '../theme/tokens.dart';
 
 /// Compact selectable card for the Mode page — `Весь ПК` / `По приложениям`.
@@ -29,6 +30,7 @@ class _ModeCardState extends State<ModeCard> {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hover = true),
@@ -40,21 +42,21 @@ class _ModeCardState extends State<ModeCard> {
           padding: const EdgeInsets.all(KissSpacing.lg),
           decoration: BoxDecoration(
             color: widget.selected
-                ? KissColors.pink.withValues(alpha: 0.06)
-                : KissColors.bg2.withValues(alpha: _hover ? 0.85 : 0.6),
+                ? t.accent.withValues(alpha: 0.06)
+                : t.bg2.withValues(alpha: _hover ? 0.85 : 0.6),
             borderRadius: BorderRadius.circular(KissRadius.md),
             border: Border.all(
               color: widget.selected
-                  ? KissColors.pink.withValues(alpha: 0.5)
+                  ? t.accent.withValues(alpha: 0.5)
                   : (_hover
-                      ? KissColors.strokeBright
-                      : KissColors.stroke),
+                      ? t.strokeBright
+                      : t.stroke),
               width: widget.selected ? 1.4 : 1,
             ),
             boxShadow: widget.selected
                 ? [
                     BoxShadow(
-                      color: KissColors.pink.withValues(alpha: 0.18),
+                      color: t.accent.withValues(alpha: 0.18),
                       blurRadius: 22,
                       spreadRadius: -6,
                     ),
@@ -68,12 +70,12 @@ class _ModeCardState extends State<ModeCard> {
                 height: 44,
                 decoration: BoxDecoration(
                   gradient: widget.selected ? KissGradients.brand : null,
-                  color: widget.selected ? null : KissColors.bg3,
+                  color: widget.selected ? null : t.bg3,
                   borderRadius: BorderRadius.circular(KissRadius.sm),
                 ),
                 child: Icon(
                   widget.icon,
-                  color: widget.selected ? Colors.white : KissColors.textMid,
+                  color: widget.selected ? Colors.white : t.textMid,
                   size: 22,
                 ),
               ),
@@ -85,17 +87,17 @@ class _ModeCardState extends State<ModeCard> {
                   children: [
                     Text(
                       widget.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
-                        color: KissColors.textHi,
+                        color: t.textHi,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       widget.subtitle,
-                      style: const TextStyle(
-                        color: KissColors.textMid,
+                      style: TextStyle(
+                        color: t.textMid,
                         fontSize: 12.5,
                         height: 1.4,
                       ),
@@ -114,7 +116,7 @@ class _ModeCardState extends State<ModeCard> {
                   border: widget.selected
                       ? null
                       : Border.all(
-                          color: KissColors.strokeBright, width: 1.5),
+                          color: t.strokeBright, width: 1.5),
                 ),
                 child: widget.selected
                     ? const Icon(Icons.check_rounded,

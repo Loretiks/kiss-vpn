@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,7 +22,7 @@ class AppSettings {
     this.killswitch = false,
     this.autostart = false,
     this.closeToTray = true,
-    this.themeMode = 'dark',
+    this.themeMode = 'kiss',
     this.routingMode = 'rule',
   });
 
@@ -57,9 +59,21 @@ class AppSettings {
 }
 
 class SettingsController extends StateNotifier<AppSettings> {
-  SettingsController(this._prefs) : super(_load(_prefs));
+  SettingsController(this._prefs) : super(_load(_prefs)) {
+    _syncAutostart(state.autostart);
+  }
 
   final SharedPreferences _prefs;
+
+  static void _syncAutostart(bool enable) {
+    final exe = Platform.resolvedExecutable;
+    const key = r'HKCU\Software\Microsoft\Windows\CurrentVersion\Run';
+    if (enable) {
+      Process.run('reg', ['add', key, '/v', 'KissVPN', '/t', 'REG_SZ', '/d', '"$exe" --minimized', '/f']);
+    } else {
+      Process.run('reg', ['delete', key, '/v', 'KissVPN', '/f']);
+    }
+  }
 
   static AppSettings _load(SharedPreferences p) {
     VpnScope scope = VpnScope.whole;
@@ -78,7 +92,7 @@ class SettingsController extends StateNotifier<AppSettings> {
       killswitch: p.getBool('kiss.killswitch') ?? false,
       autostart: p.getBool('kiss.autostart') ?? false,
       closeToTray: p.getBool('kiss.closeToTray') ?? true,
-      themeMode: p.getString('kiss.themeMode') ?? 'dark',
+      themeMode: p.getString('kiss.themeMode') ?? 'kiss',
       routingMode: p.getString('kiss.routingMode') ?? 'rule',
     );
   }
@@ -106,6 +120,7 @@ class SettingsController extends StateNotifier<AppSettings> {
   void setAutostart(bool v) {
     state = state.copyWith(autostart: v);
     _prefs.setBool('kiss.autostart', v);
+    _syncAutostart(v);
   }
 
   void setCloseToTray(bool v) {

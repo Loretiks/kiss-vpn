@@ -74,6 +74,12 @@ class HelperClient {
       if (peek == 0) {
         // Pipe broken / closed.
         _closed = true;
+        _poller?.cancel();
+        _poller = null;
+        if (_handle != INVALID_HANDLE_VALUE && _handle != 0) {
+          CloseHandle(_handle);
+          _handle = INVALID_HANDLE_VALUE;
+        }
         return;
       }
       final n = available.value;
@@ -184,6 +190,10 @@ class HelperClient {
     _closed = true;
     _poller?.cancel();
     _poller = null;
+    for (final c in _pending.values) {
+      c.completeError(StateError('HelperClient closed'));
+    }
+    _pending.clear();
     if (_handle != INVALID_HANDLE_VALUE && _handle != 0) {
       CloseHandle(_handle);
       _handle = INVALID_HANDLE_VALUE;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/tokens.dart';
+import '../theme/kiss_theme.dart';
 
 /// Soft pink + violet aurora gradient mesh used as a full-page backdrop.
 class MeshBackground extends StatelessWidget {
@@ -11,6 +11,7 @@ class MeshBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     // The mesh layer is fully static — rasterise it once into its own
     // layer with RepaintBoundary so a child repaint (e.g. the spinning
     // connect ring) doesn't re-paint these three Gaussian blobs, which
@@ -22,20 +23,20 @@ class MeshBackground extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              const ColoredBox(color: KissColors.bg0),
+              ColoredBox(color: t.bg0),
               _GlowBlob(
                 alignment: const Alignment(-1.15, -0.95),
-                color: KissColors.pink.withValues(alpha: 0.45 * intensity),
+                color: t.accent.withValues(alpha: 0.45 * intensity),
                 radius: 1.0,
               ),
               _GlowBlob(
                 alignment: const Alignment(1.25, -0.6),
-                color: KissColors.violet.withValues(alpha: 0.40 * intensity),
+                color: t.accentAlt.withValues(alpha: 0.40 * intensity),
                 radius: 1.1,
               ),
               _GlowBlob(
                 alignment: const Alignment(0.9, 1.2),
-                color: KissColors.pinkDeep.withValues(alpha: 0.28 * intensity),
+                color: t.accentDeep.withValues(alpha: 0.28 * intensity),
                 radius: 1.3,
               ),
               DecoratedBox(
@@ -44,7 +45,7 @@ class MeshBackground extends StatelessWidget {
                     radius: 1.3,
                     colors: [
                       Colors.transparent,
-                      KissColors.bg0.withValues(alpha: 0.55),
+                      t.bg0.withValues(alpha: 0.55),
                     ],
                     stops: const [0.55, 1.0],
                   ),

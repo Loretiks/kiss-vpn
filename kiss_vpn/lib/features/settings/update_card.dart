@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/updater/update_controller.dart';
+import '../../shared/theme/kiss_theme.dart';
 import '../../shared/theme/tokens.dart';
 import '../../shared/utils/format.dart';
 
@@ -16,6 +17,7 @@ class UpdateCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = KissTheme.of(context);
     final st = ref.watch(updateControllerProvider);
     final ctl = ref.read(updateControllerProvider.notifier);
 
@@ -26,7 +28,7 @@ class UpdateCard extends ConsumerWidget {
 
     switch (st.phase) {
       case UpdatePhase.idle:
-        accent = KissColors.textLow;
+        accent = t.textLow;
         title = 'Версия ${st.currentVersion.isEmpty ? '…' : st.currentVersion}';
         subtitle = 'Установлена последняя версия.';
         action = _ghostBtn(
@@ -36,19 +38,19 @@ class UpdateCard extends ConsumerWidget {
         );
         break;
       case UpdatePhase.checking:
-        accent = KissColors.violet;
+        accent = t.accentAlt;
         title = 'Проверяем обновления…';
         subtitle = 'Запрос к GitHub Releases.';
-        action = const SizedBox(
+        action = SizedBox(
           width: 18,
           height: 18,
           child: CircularProgressIndicator(
-              strokeWidth: 2.2, color: KissColors.violet),
+              strokeWidth: 2.2, color: t.accentAlt),
         );
         break;
       case UpdatePhase.available:
         final info = st.info!;
-        accent = KissColors.pink;
+        accent = t.accent;
         title = 'Доступна версия ${info.version}';
         subtitle = info.notes.trim().isEmpty
             ? 'Размер: ${Format.bytes(info.installerSize)}'
@@ -71,7 +73,7 @@ class UpdateCard extends ConsumerWidget {
         break;
       case UpdatePhase.downloading:
         final pct = (st.progress * 100).clamp(0, 100).toStringAsFixed(0);
-        accent = KissColors.pink;
+        accent = t.accent;
         title = 'Загрузка ${st.info?.version ?? ''} · $pct%';
         subtitle = '${Format.bytes(st.received)} из ${Format.bytes(st.total)}';
         action = _ghostBtn(
@@ -81,7 +83,7 @@ class UpdateCard extends ConsumerWidget {
         );
         break;
       case UpdatePhase.ready:
-        accent = KissColors.success;
+        accent = t.success;
         title = 'Готово к установке — версия ${st.info?.version ?? ''}';
         subtitle =
             'Приложение закроется, запустится installer и снова откроет окно.';
@@ -92,18 +94,18 @@ class UpdateCard extends ConsumerWidget {
         );
         break;
       case UpdatePhase.installing:
-        accent = KissColors.success;
+        accent = t.success;
         title = 'Запускаем installer…';
         subtitle = 'Окно сейчас закроется.';
-        action = const SizedBox(
+        action = SizedBox(
           width: 18,
           height: 18,
           child: CircularProgressIndicator(
-              strokeWidth: 2.2, color: KissColors.success),
+              strokeWidth: 2.2, color: t.success),
         );
         break;
       case UpdatePhase.error:
-        accent = KissColors.danger;
+        accent = t.danger;
         title = 'Не удалось проверить обновления';
         subtitle = st.error;
         action = _ghostBtn(
@@ -117,9 +119,9 @@ class UpdateCard extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(KissSpacing.lg),
       decoration: BoxDecoration(
-        color: KissColors.bg2.withValues(alpha: 0.6),
+        color: t.bg2.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(KissRadius.md),
-        border: Border.all(color: KissColors.stroke, width: 1),
+        border: Border.all(color: t.stroke, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,18 +150,18 @@ class UpdateCard extends ConsumerWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
-                        color: KissColors.textHi,
+                        color: t.textHi,
                       ),
                     ),
                     if (subtitle != null) ...[
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: const TextStyle(
-                          color: KissColors.textMid,
+                        style: TextStyle(
+                          color: t.textMid,
                           fontSize: 12,
                           height: 1.4,
                         ),
@@ -179,8 +181,8 @@ class UpdateCard extends ConsumerWidget {
               child: LinearProgressIndicator(
                 value: st.progress,
                 minHeight: 6,
-                backgroundColor: KissColors.bg3,
-                valueColor: const AlwaysStoppedAnimation(KissColors.pink),
+                backgroundColor: t.bg3,
+                valueColor: AlwaysStoppedAnimation(t.accent),
               ),
             ),
           ],
@@ -252,6 +254,7 @@ class _BtnState extends State<_Btn> {
   bool _hover = false;
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final disabled = widget.onTap == null;
     return MouseRegion(
       cursor: disabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
@@ -267,17 +270,17 @@ class _BtnState extends State<_Btn> {
             gradient: widget.filled ? KissGradients.brand : null,
             color: widget.filled
                 ? null
-                : (_hover ? KissColors.bg3 : KissColors.bg2),
+                : (_hover ? t.bg3 : t.bg2),
             border: widget.filled
                 ? null
                 : Border.all(
-                    color: _hover ? KissColors.strokeBright : KissColors.stroke,
+                    color: _hover ? t.strokeBright : t.stroke,
                   ),
             borderRadius: BorderRadius.circular(999),
             boxShadow: widget.filled && !disabled
                 ? [
                     BoxShadow(
-                      color: KissColors.pink.withValues(alpha: 0.3),
+                      color: t.accent.withValues(alpha: 0.3),
                       blurRadius: 16,
                       spreadRadius: -4,
                     ),
@@ -291,13 +294,13 @@ class _BtnState extends State<_Btn> {
                   size: 14,
                   color: widget.filled
                       ? Colors.white
-                      : KissColors.textMid),
+                      : t.textMid),
               const SizedBox(width: 6),
               Text(
                 widget.label,
                 style: TextStyle(
                   color:
-                      widget.filled ? Colors.white : KissColors.textHi,
+                      widget.filled ? Colors.white : t.textHi,
                   fontWeight: FontWeight.w600,
                   fontSize: 12.5,
                 ),

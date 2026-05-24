@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/rules/rule.dart';
 import '../../core/rules/rule_kind_meta.dart';
+import '../../shared/theme/kiss_theme.dart';
 import '../../shared/theme/tokens.dart';
 import '../../shared/widgets/gradient_button.dart';
 import 'process_picker_dialog.dart';
@@ -59,12 +60,13 @@ class _RuleEditorDialogState extends State<RuleEditorDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final meta = RuleKindMeta.of(_kind);
     return Dialog(
-      backgroundColor: KissColors.bg1,
+      backgroundColor: t.bg1,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(KissRadius.lg),
-        side: const BorderSide(color: KissColors.stroke),
+        side: BorderSide(color: t.stroke),
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 520),
@@ -80,12 +82,12 @@ class _RuleEditorDialogState extends State<RuleEditorDialog> {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: KissColors.violet.withValues(alpha: 0.18),
+                      color: t.accentAlt.withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     alignment: Alignment.center,
-                    child: const Icon(Icons.shield_outlined,
-                        size: 18, color: KissColors.violet),
+                    child: Icon(Icons.shield_outlined,
+                        size: 18, color: t.accentAlt),
                   ),
                   const SizedBox(width: KissSpacing.md),
                   Expanded(
@@ -156,8 +158,8 @@ class _RuleEditorDialogState extends State<RuleEditorDialog> {
                 padding: const EdgeInsets.only(left: 4),
                 child: Text(
                   meta.helper,
-                  style: const TextStyle(
-                    color: KissColors.textLow,
+                  style: TextStyle(
+                    color: t.textLow,
                     fontSize: 12,
                   ),
                 ),
@@ -245,21 +247,24 @@ class _SectionLabel extends StatelessWidget {
   const _SectionLabel(this.text);
   final String text;
   @override
-  Widget build(BuildContext context) => Row(
-        children: [
-          Text(
-            text,
-            style: const TextStyle(
-              color: KissColors.textHi,
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-            ),
+  Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
+    return Row(
+      children: [
+        Text(
+          text,
+          style: TextStyle(
+            color: t.textHi,
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
           ),
-          const SizedBox(width: 6),
-          const Icon(Icons.help_outline_rounded,
-              size: 14, color: KissColors.textDim),
-        ],
-      );
+        ),
+        const SizedBox(width: 6),
+        Icon(Icons.help_outline_rounded,
+            size: 14, color: t.textDim),
+      ],
+    );
+  }
 }
 
 class _TypeChip extends StatelessWidget {
@@ -274,6 +279,7 @@ class _TypeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = KissTheme.of(context);
     final meta = RuleKindMeta.of(kind);
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -285,12 +291,12 @@ class _TypeChip extends StatelessWidget {
               horizontal: KissSpacing.md, vertical: 8),
           decoration: BoxDecoration(
             color: selected
-                ? KissColors.pink.withValues(alpha: 0.12)
-                : KissColors.bg2.withValues(alpha: 0.6),
+                ? t.accent.withValues(alpha: 0.12)
+                : t.bg2.withValues(alpha: 0.6),
             border: Border.all(
               color: selected
-                  ? KissColors.pink.withValues(alpha: 0.6)
-                  : KissColors.stroke,
+                  ? t.accent.withValues(alpha: 0.6)
+                  : t.stroke,
               width: selected ? 1.4 : 1,
             ),
             borderRadius: BorderRadius.circular(KissRadius.sm),
@@ -301,13 +307,13 @@ class _TypeChip extends StatelessWidget {
               Icon(
                 meta.icon,
                 size: 14,
-                color: selected ? KissColors.pink : KissColors.textLow,
+                color: selected ? t.accent : t.textLow,
               ),
               const SizedBox(width: 6),
               Text(
                 meta.label,
                 style: TextStyle(
-                  color: selected ? KissColors.textHi : KissColors.textMid,
+                  color: selected ? t.textHi : t.textMid,
                   fontWeight: FontWeight.w600,
                   fontSize: 12.5,
                 ),
@@ -336,7 +342,8 @@ class _ActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? KissColors.pink : KissColors.textLow;
+    final t = KissTheme.of(context);
+    final color = selected ? t.accent : t.textLow;
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
@@ -347,12 +354,12 @@ class _ActionCard extends StatelessWidget {
               horizontal: KissSpacing.lg, vertical: KissSpacing.lg),
           decoration: BoxDecoration(
             color: selected
-                ? KissColors.pink.withValues(alpha: 0.06)
-                : KissColors.bg2.withValues(alpha: 0.6),
+                ? t.accent.withValues(alpha: 0.06)
+                : t.bg2.withValues(alpha: 0.6),
             border: Border.all(
               color: selected
-                  ? KissColors.pink.withValues(alpha: 0.6)
-                  : KissColors.stroke,
+                  ? t.accent.withValues(alpha: 0.6)
+                  : t.stroke,
               width: selected ? 1.4 : 1,
             ),
             borderRadius: BorderRadius.circular(KissRadius.md),
@@ -364,7 +371,7 @@ class _ActionCard extends StatelessWidget {
               Text(
                 title,
                 style: TextStyle(
-                  color: selected ? KissColors.textHi : KissColors.textMid,
+                  color: selected ? t.textHi : t.textMid,
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
                 ),
@@ -372,8 +379,8 @@ class _ActionCard extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: const TextStyle(
-                  color: KissColors.textLow,
+                style: TextStyle(
+                  color: t.textLow,
                   fontSize: 11.5,
                 ),
               ),
