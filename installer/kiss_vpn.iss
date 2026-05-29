@@ -4,7 +4,7 @@
 ;   "C:\Program Files (x86)\Inno Setup 6\iscc.exe" installer\kiss_vpn.iss
 
 #define MyAppName        "Kiss VPN"
-#define MyAppVersion     "0.1.5"
+#define MyAppVersion     "0.1.6"
 #define MyAppPublisher   "kissmain.ru"
 #define MyAppURL         "https://kissmain.ru"
 #define MyAppExeName     "kiss_vpn.exe"

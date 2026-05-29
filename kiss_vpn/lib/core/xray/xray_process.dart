@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
+import '../logging/app_log.dart';
+
 /// Supervises a single bundled `xray.exe` instance.
 ///
 /// xray runs as an unprivileged sidecar to Mihomo: it accepts socks5 on
@@ -54,16 +56,25 @@ class XrayProcess {
       mode: ProcessStartMode.normal,
     );
 
+    AppLog.instance.info('xray', 'starting: ${bin.path} -config $absConfig');
+
     _stdoutSub = _proc!.stdout
         .transform(const SystemEncoding().decoder)
         .transform(const LineSplitter())
-        .listen((l) => onLog?.call('[xray] $l'));
+        .listen((l) {
+      AppLog.instance.debug('xray', l);
+      onLog?.call('[xray] $l');
+    });
     _stderrSub = _proc!.stderr
         .transform(const SystemEncoding().decoder)
         .transform(const LineSplitter())
-        .listen((l) => onLog?.call('[xray-err] $l'));
+        .listen((l) {
+      AppLog.instance.warn('xray', l);
+      onLog?.call('[xray-err] $l');
+    });
 
     unawaited(_proc!.exitCode.then((code) {
+      AppLog.instance.info('xray', 'exited with code $code');
       onLog?.call('[xray] exited with code $code');
       _proc = null;
     }));

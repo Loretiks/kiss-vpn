@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
 import '../ipc/helper_client.dart';
+import '../logging/app_log.dart';
+import '../platform/port_finder.dart';
 import '../platform/system_proxy.dart';
 import '../rules/rule.dart';
 import '../rules/rules_builder.dart';
@@ -100,7 +102,7 @@ class VpnController extends StateNotifier<VpnState> {
   VpnController(this._ref) : super(const VpnState());
 
   final Ref _ref;
-  final _api = MihomoApi();
+  MihomoApi _api = MihomoApi();
   final _proc = MihomoProcessManager();
   final _grpc = GrpcBridge();
   HelperClient? _helper;
@@ -116,8 +118,10 @@ class VpnController extends StateNotifier<VpnState> {
       final v = await hc.call('version', timeout: const Duration(seconds: 2));
       _helper = hc;
       _helperElevated = v['is_elevated'] == true;
+      AppLog.instance.info('helper', 'connected v=${v['version']} elevated=$_helperElevated');
       return true;
-    } catch (_) {
+    } catch (e) {
+      AppLog.instance.warn('helper', 'probe failed: $e');
       await hc.close();
       return false;
     }
@@ -225,21 +229,31 @@ class VpnController extends StateNotifier<VpnState> {
     await _proc.start(configPath: configPath);
   }
 
+  /// Ports actually chosen for this session, surfaced for the API client
+  /// and system-proxy registration.
+  int _mixedPort = 7890;
+  int _controllerPort = 9090;
+
   Future<void> connect() async {
     if (state.status == VpnStatus.connecting || state.status == VpnStatus.connected) return;
     state = state.copyWith(status: VpnStatus.connecting, clearError: true, totalDown: 0, totalUp: 0);
+    AppLog.instance.info('vpn', 'connect: requested');
     try {
       final repo = _ref.read(subscriptionRepositoryProvider);
       final settings = _ref.read(settingsControllerProvider);
+      AppLog.instance.info('vpn',
+          'settings: scope=${settings.scope.name} engine=${settings.engine.name} mode=${settings.routingMode} killswitch=${settings.killswitch}');
       final proxies = await repo.loadProxies();
       if (proxies.isEmpty) {
         throw StateError('No proxies in subscription. Add one first.');
       }
+      AppLog.instance.info('vpn', 'loaded ${proxies.length} proxies from subscription');
 
       // Resolve the config: prefer the panel-curated YAML, fall back to our
       // generated one. Either way we patch it with our routing preferences.
       var configYaml = await repo.cachedClashYaml() ?? '';
       if (configYaml.isEmpty) {
+        AppLog.instance.info('vpn', 'no panel YAML cached, generating locally');
         final tmp = await _proc.profileDir();
         final tmpPath = p.join(tmp.path, '.generated.yaml');
         await ConfigWriter.writeConfig(
@@ -249,9 +263,28 @@ class VpnController extends StateNotifier<VpnState> {
         );
         configYaml = await File(tmpPath).readAsString();
       }
+
+      // Probe for port collisions BEFORE writing the final YAML. Another
+      // Clash-family client (SnowVPN, Clash for Windows, v2rayN) commonly
+      // sits on the default 9090/7890 — pick alternates rather than fail.
+      _controllerPort = await PortFinder.findFree([9090, 19090, 29090, 39090]);
+      _mixedPort = await PortFinder.findFree([7890, 17890, 27890, 37890]);
+      if (_controllerPort != 9090 || _mixedPort != 7890) {
+        AppLog.instance.warn('vpn',
+            'default ports busy → controller=$_controllerPort mixed=$_mixedPort');
+      } else {
+        AppLog.instance.info('vpn',
+            'using default ports: controller=9090 mixed=7890');
+      }
+
       configYaml = ConfigPatcher.setMode(configYaml, settings.routingMode);
-      configYaml = ConfigPatcher.setController(configYaml);
+      configYaml = ConfigPatcher.setController(configYaml, port: _controllerPort);
+      configYaml = ConfigPatcher.setMixedPort(configYaml, _mixedPort);
       configYaml = ConfigPatcher.setTun(configYaml, enable: settings.tunMode);
+
+      // Rebuild API client against the chosen controller port — the default
+      // instance is pinned to 9090 which may not be what we just decided.
+      _api = MihomoApi(port: _controllerPort);
 
       // Per-app scope: override the panel's `rules:` block with the user's
       // SplitRule list. Default action becomes DIRECT — anything the user
@@ -321,8 +354,9 @@ class VpnController extends StateNotifier<VpnState> {
           });
         }
       } else {
-        await _proc.start(configPath: configPath);
+        await _proc.start(configPath: configPath, apiForReadiness: _api);
       }
+      AppLog.instance.info('vpn', 'core is up via ${viaHelper ? "helper" : "direct"}');
 
       // Honour the user's persisted server pick if it matches one in the
       // active subscription; otherwise default to the first entry.
@@ -369,15 +403,16 @@ class VpnController extends StateNotifier<VpnState> {
       // WinHTTP to actually catch app traffic. TUN-engine that successfully
       // came up doesn't need either — wintun intercepts at layer 3.
       if (effectiveEngine == VpnEngine.proxy) {
-        await syncSystemProxy(connecting: true, engine: VpnEngine.proxy);
+        await syncSystemProxy(connecting: true, engine: VpnEngine.proxy, port: _mixedPort);
         if (viaHelper && _helper != null) {
           try {
             await _helper!.call('set_winhttp_proxy',
-                params: {'host': '127.0.0.1', 'port': 7890});
+                params: {'host': '127.0.0.1', 'port': _mixedPort});
           } catch (_) {/* best-effort, HKCU registry still active */}
         }
       }
 
+      AppLog.instance.info('vpn', 'connected · server=${selected.name} engine=${effectiveEngine.name}');
       state = state.copyWith(
         status: VpnStatus.connected,
         currentServer: selected.name,
@@ -390,9 +425,11 @@ class VpnController extends StateNotifier<VpnState> {
               'переключились на системный прокси.'
             : null,
       );
-    } catch (e) {
+    } catch (e, st) {
+      AppLog.instance.error('vpn', 'connect failed: $e');
+      AppLog.instance.debug('vpn', st.toString());
       state = state.copyWith(status: VpnStatus.error, error: e.toString());
-      await syncSystemProxy(connecting: false, engine: VpnEngine.proxy);
+      await syncSystemProxy(connecting: false, engine: VpnEngine.proxy, port: _mixedPort);
       await _proc.stop();
       await _grpc.teardown();
       try {
@@ -408,9 +445,10 @@ class VpnController extends StateNotifier<VpnState> {
     await _trafficSub?.cancel();
     _trafficSub = null;
 
+    AppLog.instance.info('vpn', 'disconnect: requested');
     // Restore the user's original Windows system proxy before tearing down
-    // the core — that way no app is left pointed at a dead 7890 port.
-    await syncSystemProxy(connecting: false, engine: VpnEngine.proxy);
+    // the core — that way no app is left pointed at a dead mixed-port.
+    await syncSystemProxy(connecting: false, engine: VpnEngine.proxy, port: _mixedPort);
     if (state.usingHelper && _helper != null) {
       try {
         await _helper!.call('reset_winhttp_proxy');

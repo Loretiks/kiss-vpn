@@ -7,6 +7,11 @@ class ConfigPatcher {
   static String setMode(String yaml, String mode) =>
       _setScalar(yaml, 'mode', mode);
 
+  /// Pin the local SOCKS+HTTP inbound to [port] (Mihomo default 7890).
+  /// Used when the default is occupied by another VPN client.
+  static String setMixedPort(String yaml, int port) =>
+      _setScalar(yaml, 'mixed-port', '$port');
+
   /// Pin the REST controller to [host]:[port] with optional bearer [secret].
   static String setController(String yaml, {String host = '127.0.0.1', int port = 9090, String? secret}) {
     var out = _setScalar(yaml, 'external-controller', '$host:$port');

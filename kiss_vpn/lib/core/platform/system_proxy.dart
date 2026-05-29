@@ -184,12 +184,13 @@ class _ProxyBackup {
 Future<bool> syncSystemProxy({
   required bool connecting,
   required VpnEngine engine,
+  int port = 7890,
 }) async {
   // Only Proxy-engine sessions need the registry trick; TUN catches all
   // traffic by itself.
   if (engine != VpnEngine.proxy) return false;
   if (connecting) {
-    return SystemProxy.apply();
+    return SystemProxy.apply(port: port);
   } else {
     return SystemProxy.revert();
   }
